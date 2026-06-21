@@ -1,13 +1,14 @@
 'use client';
 
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import Link from 'next/link';
-import { AuthContext } from '../../components/Providers';
+import { AuthContext, ThemeContext } from '../../components/Providers';
 import { Mail, Lock, User, Phone, MapPin, Upload, Loader2, CheckSquare, Square } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function Register() {
   const { register, loginWithGoogle } = useContext(AuthContext);
+  const { theme } = useContext(ThemeContext);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -22,6 +23,46 @@ export default function Register() {
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+
+  useEffect(() => {
+    let interval;
+    const initGoogle = () => {
+      if (window.google?.accounts?.id) {
+        window.google.accounts.id.initialize({
+          client_id: '214238079396-c5pssp351ab8d766fqocs9cbdmp29nko.apps.googleusercontent.com',
+          callback: async (response) => {
+            setLoading(true);
+            try {
+              const res = await loginWithGoogle(response.credential);
+              if (res && !res.success) {
+                toast.error(res.error || 'Google sign-up failed');
+              }
+            } catch (err) {
+              console.error(err);
+              toast.error('Google sign-up failed');
+            } finally {
+              setLoading(false);
+            }
+          },
+        });
+        window.google.accounts.id.renderButton(
+          document.getElementById('google-signin-btn'),
+          {
+            theme: theme === 'dark' ? 'filled_blue' : 'outline',
+            size: 'large',
+            width: '380',
+            text: 'signup_with',
+            shape: 'pill'
+          }
+        );
+        if (interval) clearInterval(interval);
+      }
+    };
+
+    initGoogle();
+    interval = setInterval(initGoogle, 500);
+    return () => clearInterval(interval);
+  }, [theme, loginWithGoogle]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -81,20 +122,6 @@ export default function Register() {
       formData.photo,
       formData.phone,
       formData.location
-    );
-    setLoading(false);
-  };
-
-  // Google Login simulator trigger
-  const handleGoogleRegister = async () => {
-    setLoading(true);
-    // Simulate retrieving Google account information via popup credentials
-    const mockGoogleId = `google_${Date.now()}`;
-    await loginWithGoogle(
-      formData.name || 'Google User',
-      formData.email || `google_user_${Date.now()}@gmail.com`,
-      formData.photo || 'https://i.pravatar.cc/300?img=12',
-      mockGoogleId
     );
     setLoading(false);
   };
@@ -282,31 +309,9 @@ export default function Register() {
         </div>
 
         {/* Google Registration Button */}
-        <button
-          onClick={handleGoogleRegister}
-          disabled={loading}
-          className="w-full flex items-center justify-center gap-2 py-3 border border-gray-300 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900 rounded-xl font-semibold text-sm text-gray-700 dark:text-gray-300 transition"
-        >
-          <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24">
-            <path
-              fill="#4285F4"
-              d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v3.92h6.69a5.74 5.74 0 0 1-2.49 3.77v3.12h4.01c2.34-2.16 3.68-5.32 3.68-8.74z"
-            />
-            <path
-              fill="#34A853"
-              d="M12 24c3.24 0 5.97-1.08 7.96-2.91l-4.01-3.12c-1.12.75-2.54 1.19-3.95 1.19-3.05 0-5.64-2.06-6.56-4.83H1.31v3.22A12.002 12.002 0 0 0 12 24z"
-            />
-            <path
-              fill="#FBBC05"
-              d="M5.44 14.33c-.24-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29V6.53H1.31A11.996 11.996 0 0 0 0 12c0 2.12.55 4.12 1.31 5.47l4.13-3.14z"
-            />
-            <path
-              fill="#EA4335"
-              d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.22 0 12 0 7.31 0 3.25 2.71 1.31 6.53l4.13 3.22c.92-2.77 3.51-4.83 6.56-4.83z"
-            />
-          </svg>
-          Continue with Google
-        </button>
+        <div className="flex justify-center w-full min-h-[44px]">
+          <div id="google-signin-btn" className="w-full flex justify-center"></div>
+        </div>
 
         <p className="text-center text-xs text-gray-500 dark:text-gray-400">
           Already have an account?{' '}

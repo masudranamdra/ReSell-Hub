@@ -127,13 +127,13 @@ export function Providers({ children }) {
     }
   };
 
-  // Google Sign-in Simulator
-  const loginWithGoogle = async (name, email, photo, googleId) => {
+  // Google Sign-in
+  const loginWithGoogle = async (credential) => {
     try {
       const res = await fetch(`${API_URL}/api/auth/google`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, photo, googleId })
+        body: JSON.stringify({ credential })
       });
       const data = await res.json();
 

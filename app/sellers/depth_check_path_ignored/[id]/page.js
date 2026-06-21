@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { API_URL } from '../../components/Providers';
+import { API_URL } from '../../../../components/Providers';
 import { ShieldCheck, Star, Calendar, MapPin, ArrowLeft, Layers } from 'lucide-react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
