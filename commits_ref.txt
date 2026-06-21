@@ -4,3 +4,5 @@ Mobile spacing fix
 Lazy loading fix
 
 Router diagram
+
+Charts memoization
