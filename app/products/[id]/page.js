@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { AuthContext, API_URL } from '../../../components/Providers';
 import { Star, Heart, AlertTriangle, ShieldCheck, ShoppingCart, BarChart3, Bell, ArrowLeft, ArrowRight, User } from 'lucide-react';
 import toast from 'react-hot-toast';
