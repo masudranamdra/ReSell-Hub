@@ -2,3 +2,5 @@ Dark mode tweak
 Mobile spacing fix
 
 Lazy loading fix
+
+Router diagram
