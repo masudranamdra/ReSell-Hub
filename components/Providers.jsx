@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 export const AuthContext = createContext();
 export const ThemeContext = createContext();
 
-export const API_URL = 'http://localhost:5000';
+export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 export function Providers({ children }) {
   const router = useRouter();
@@ -74,12 +74,12 @@ export function Providers({ children }) {
   };
 
   // Email / Password Login
-  const login = async (email, password, rememberMe) => {
+  const login = async (email, password, role, rememberMe) => {
     try {
       const res = await fetch(`${API_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email, password, role })
       });
       const data = await res.json();
       
@@ -101,12 +101,12 @@ export function Providers({ children }) {
   };
 
   // Email / Password Registration
-  const register = async (name, email, password, confirmPassword, photo, phone, location) => {
+  const register = async (name, email, password, confirmPassword, photo, phone, location, role) => {
     try {
       const res = await fetch(`${API_URL}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password, confirmPassword, photo, phone, location })
+        body: JSON.stringify({ name, email, password, confirmPassword, photo, phone, location, role })
       });
       const data = await res.json();
 
@@ -128,12 +128,12 @@ export function Providers({ children }) {
   };
 
   // Google Sign-in
-  const loginWithGoogle = async (credential) => {
+  const loginWithGoogle = async (credential, role) => {
     try {
       const res = await fetch(`${API_URL}/api/auth/google`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ credential })
+        body: JSON.stringify({ credential, role })
       });
       const data = await res.json();
 
@@ -190,6 +190,31 @@ export function Providers({ children }) {
     }
   };
 
+  // Apply to become a seller
+  const applySeller = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/users/apply-seller`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        setUser(prev => ({ ...prev, sellerRequestStatus: 'pending' }));
+        toast.success(data.message || 'Seller application submitted!');
+        return { success: true };
+      } else {
+        toast.error(data.message || 'Seller application failed');
+        return { success: false, error: data.message };
+      }
+    } catch (err) {
+      toast.error('Connection error during seller application.');
+      return { success: false, error: err.message };
+    }
+  };
+
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
       <AuthContext.Provider
@@ -202,6 +227,7 @@ export function Providers({ children }) {
           loginWithGoogle,
           logout,
           updateProfile,
+          applySeller,
           fetchUserProfile
         }}
       >
