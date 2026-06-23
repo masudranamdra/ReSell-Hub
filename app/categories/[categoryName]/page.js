@@ -1,21 +1,22 @@
 'use client';
 
-import React, { useState, useEffect, useContext, Suspense } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import React, { useState, useEffect, Suspense } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Search, SlidersHorizontal, ArrowUpDown, ChevronLeft, ChevronRight, RotateCcw, MapPin, Heart, ShoppingCart, BarChart3, ShieldCheck } from 'lucide-react';
-import { AuthContext, API_URL } from '../../components/Providers';
-import toast from 'react-hot-toast';
+import { Search, SlidersHorizontal, ArrowUpDown, ChevronLeft, ChevronRight, RotateCcw, MapPin, Tag, Compass, Loader2 } from 'lucide-react';
+import { API_URL } from '../../../components/Providers';
 import { motion } from 'framer-motion';
 
-function ProductsContent() {
-  const searchParams = useSearchParams();
+function CategoryContent() {
+  const { categoryName } = useParams();
   const router = useRouter();
-  const { token } = useContext(AuthContext);
 
-  // Search & Filter States
+  // Category Info states
+  const [matchedCategory, setMatchedCategory] = useState(null);
+  const [catStats, setCatStats] = useState({ total: 0, avgPrice: 0, minPrice: 0, maxPrice: 0 });
+
+  // Search & Filter states
   const [search, setSearch] = useState('');
-  const [category, setCategory] = useState(searchParams.get('category') || '');
   const [condition, setCondition] = useState('');
   const [location, setLocation] = useState('');
   const [minPrice, setMinPrice] = useState('');
@@ -23,59 +24,61 @@ function ProductsContent() {
   const [sort, setSort] = useState('newest');
   const [page, setPage] = useState(1);
 
-  // Data States
+  // Data states
   const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [wishlist, setWishlist] = useState([]);
-  const [compareList, setCompareList] = useState([]);
   const [pagination, setPagination] = useState({ total: 0, page: 1, limit: 6, pages: 1 });
   const [loading, setLoading] = useState(true);
+  const [catLoading, setCatLoading] = useState(true);
 
-  // Load categories
+  // Load category and compute stats
   useEffect(() => {
-    async function loadCategories() {
+    async function loadCategoryInfo() {
       try {
         const res = await fetch(`${API_URL}/api/categories`);
         const data = await res.json();
-        if (data.success) setCategories(data.categories);
-      } catch (err) {
-        console.error('Error fetching categories:', err);
-      }
-    }
-    loadCategories();
-    
-    // Load compare list
-    const compare = JSON.parse(localStorage.getItem('compare_list') || '[]');
-    setCompareList(compare.map(item => item._id));
-  }, []);
-
-  // Fetch wishlist
-  useEffect(() => {
-    if (!token) return;
-    async function loadWishlist() {
-      try {
-        const res = await fetch(`${API_URL}/api/users/wishlist`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const data = await res.json();
         if (data.success) {
-          setWishlist(data.wishlist.map(item => item.productId?._id || item.productId));
+          const category = data.categories.find(
+            (c) => c.name.toLowerCase().replace(/\s+/g, '-') === categoryName || c.name.toLowerCase() === categoryName
+          );
+          if (category) {
+            setMatchedCategory(category);
+            
+            // Fetch stats (all products in this category)
+            const statsRes = await fetch(`${API_URL}/api/products?category=${encodeURIComponent(category.name)}&limit=100`);
+            const statsData = await statsRes.json();
+            if (statsData.success && statsData.products.length > 0) {
+              const prices = statsData.products.map(p => p.price);
+              const sum = prices.reduce((a, b) => a + b, 0);
+              setCatStats({
+                total: statsData.products.length,
+                avgPrice: Math.round(sum / statsData.products.length),
+                minPrice: Math.min(...prices),
+                maxPrice: Math.max(...prices)
+              });
+            } else {
+              setCatStats({ total: 0, avgPrice: 0, minPrice: 0, maxPrice: 0 });
+            }
+          }
         }
       } catch (err) {
-        console.error(err);
+        console.error('Error fetching category info:', err);
+      } finally {
+        setCatLoading(false);
       }
     }
-    loadWishlist();
-  }, [token]);
+    loadCategoryInfo();
+  }, [categoryName]);
 
-  // Fetch products whenever filters or pagination change
+  // Fetch category products
   useEffect(() => {
+    if (!matchedCategory) return;
+
     async function fetchProducts() {
       setLoading(true);
       try {
         const queryParams = new URLSearchParams();
+        queryParams.append('category', matchedCategory.name);
         if (search) queryParams.append('search', search);
-        if (category) queryParams.append('category', category);
         if (condition) queryParams.append('condition', condition);
         if (location) queryParams.append('location', location);
         if (minPrice) queryParams.append('minPrice', minPrice);
@@ -97,104 +100,85 @@ function ProductsContent() {
       }
     }
     fetchProducts();
-  }, [search, category, condition, location, minPrice, maxPrice, sort, page]);
+  }, [matchedCategory, search, condition, location, minPrice, maxPrice, sort, page]);
 
   const resetFilters = () => {
     setSearch('');
-    setCategory('');
     setCondition('');
     setLocation('');
     setMinPrice('');
     setMaxPrice('');
     setSort('newest');
     setPage(1);
-    router.push('/products');
   };
 
-  const toggleWishlist = async (productId) => {
-    if (!token) {
-      toast.error('Please login to manage wishlist');
-      return router.push('/login');
-    }
-    const isWishlisted = wishlist.includes(productId);
-    try {
-      const method = isWishlisted ? 'DELETE' : 'POST';
-      const res = await fetch(`${API_URL}/api/users/wishlist/${productId}`, {
-        method,
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const data = await res.json();
-      if (data.success) {
-        if (isWishlisted) {
-          setWishlist(wishlist.filter(id => id !== productId));
-          toast.success('Removed from wishlist');
-        } else {
-          setWishlist([...wishlist, productId]);
-          toast.success('Added to wishlist!');
-        }
-      }
-    } catch (err) {
-      toast.error('Error updating wishlist');
-    }
-  };
+  if (catLoading) {
+    return (
+      <div className="flex flex-col justify-center items-center py-40">
+        <Loader2 className="animate-spin text-primary-500 mb-2" size={40} />
+        <p className="text-xs text-gray-500 font-semibold">Loading Category details...</p>
+      </div>
+    );
+  }
 
-  const addToCart = (product) => {
-    const currentCart = JSON.parse(localStorage.getItem('cart_items') || '[]');
-    const exists = currentCart.some(item => item._id === product._id);
-    if (exists) {
-      toast.error('Item is already in your cart!');
-      return;
-    }
-    currentCart.push({
-      _id: product._id,
-      title: product.title,
-      price: product.price,
-      image: product.images[0],
-      category: product.category,
-      condition: product.condition,
-      sellerInfo: product.sellerInfo,
-      quantity: 1
-    });
-    localStorage.setItem('cart_items', JSON.stringify(currentCart));
-    toast.success('Added to cart!');
-    window.dispatchEvent(new Event('cartUpdate'));
-  };
-
-  const toggleComparison = (product) => {
-    let list = JSON.parse(localStorage.getItem('compare_list') || '[]');
-    const isCompared = compareList.includes(product._id);
-    if (isCompared) {
-      list = list.filter(item => item._id !== product._id);
-      localStorage.setItem('compare_list', JSON.stringify(list));
-      setCompareList(compareList.filter(id => id !== product._id));
-      toast.success('Removed from comparison');
-    } else {
-      if (list.length >= 3) {
-        toast.error('You can compare a maximum of 3 products');
-        return;
-      }
-      list.push({
-        _id: product._id,
-        title: product.title,
-        price: product.price,
-        condition: product.condition,
-        category: product.category,
-        image: product.images[0],
-        sellerRating: product.sellerInfo?.rating || '4.5'
-      });
-      localStorage.setItem('compare_list', JSON.stringify(list));
-      setCompareList([...compareList, product._id]);
-      toast.success('Added to comparison!');
-    }
-  };
+  if (!matchedCategory) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-20 text-center space-y-4">
+        <Tag size={48} className="mx-auto text-gray-400" />
+        <h2 className="text-2xl font-extrabold text-gray-900 dark:text-white">Category Not Found</h2>
+        <p className="text-sm text-gray-500 max-w-md mx-auto">
+          The category you are looking for does not exist or has been deleted by an administrator.
+        </p>
+        <Link href="/categories" className="inline-block px-5 py-2.5 bg-primary-600 hover:bg-primary-700 text-white text-xs font-semibold rounded-xl transition">
+          Browse Categories
+        </Link>
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 transition-colors duration-300">
-      <div className="text-left space-y-2 mb-8">
-        <h1 className="text-3xl font-extrabold text-gray-950 dark:text-white">Explore Marketplace</h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Search and filter through hundreds of verified second-hand items</p>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 transition-colors duration-300 space-y-8">
+      {/* Category Banner */}
+      <div className="relative rounded-3xl overflow-hidden shadow-xl border border-gray-200 dark:border-gray-800 bg-gray-900 text-white min-h-[220px] flex items-center p-8 sm:p-12">
+        <img
+          src={matchedCategory.image || 'https://images.unsplash.com/photo-1524758631624-e2822e304c36?q=80&w=1200'}
+          alt={matchedCategory.name}
+          className="absolute inset-0 w-full h-full object-cover opacity-30 pointer-events-none"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-gray-950 via-gray-900/90 to-transparent"></div>
+        
+        <div className="relative z-10 space-y-3 max-w-2xl text-left">
+          <span className="bg-primary-600 text-white text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider shadow-md">
+            Marketplace Category
+          </span>
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight">{matchedCategory.name}</h1>
+          <p className="text-xs sm:text-sm text-gray-300 leading-relaxed font-medium">
+            {matchedCategory.description || 'Browse listed products in this category.'}
+          </p>
+        </div>
       </div>
 
+      {/* Category Statistics */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-4 rounded-2xl shadow-sm text-center">
+          <p className="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider">Total Listings</p>
+          <p className="text-xl font-extrabold text-gray-950 dark:text-white mt-1">{catStats.total} Items</p>
+        </div>
+        <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-4 rounded-2xl shadow-sm text-center">
+          <p className="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider">Average Price</p>
+          <p className="text-xl font-extrabold text-gray-950 dark:text-white mt-1">${catStats.avgPrice}</p>
+        </div>
+        <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-4 rounded-2xl shadow-sm text-center">
+          <p className="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider">Lowest Price</p>
+          <p className="text-xl font-extrabold text-gray-950 dark:text-white mt-1">${catStats.minPrice}</p>
+        </div>
+        <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-4 rounded-2xl shadow-sm text-center">
+          <p className="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider">Highest Price</p>
+          <p className="text-xl font-extrabold text-gray-950 dark:text-white mt-1">${catStats.maxPrice}</p>
+        </div>
+      </div>
+
+      {/* Main Grid section */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* Filters Sidebar */}
         <div className="space-y-6 lg:col-span-1 bg-gray-50 dark:bg-gray-900/50 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 h-fit">
@@ -211,8 +195,8 @@ function ProductsContent() {
           </div>
 
           {/* Search bar */}
-          <div className="space-y-1.5 text-left">
-            <label className="text-xs font-semibold text-gray-600 dark:text-gray-400">Search Name</label>
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-gray-600 dark:text-gray-400">Search</label>
             <div className="relative">
               <Search className="absolute left-3 top-3 text-gray-400" size={16} />
               <input
@@ -220,30 +204,13 @@ function ProductsContent() {
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPage(1); }}
                 className="w-full pl-9 pr-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl outline-none text-xs text-gray-900 dark:text-white focus:ring-1 focus:ring-primary-500"
-                placeholder="Search products..."
+                placeholder="Search listings..."
               />
             </div>
           </div>
 
-          {/* Category Dropdown */}
-          <div className="space-y-1.5 text-left">
-            <label className="text-xs font-semibold text-gray-600 dark:text-gray-400">Category</label>
-            <select
-              value={category}
-              onChange={(e) => { setCategory(e.target.value); setPage(1); }}
-              className="w-full px-3 py-2.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl text-xs text-gray-900 dark:text-white outline-none focus:ring-1 focus:ring-primary-500"
-            >
-              <option value="">All Categories</option>
-              {categories.map((cat) => (
-                <option key={cat._id} value={cat.name}>
-                  {cat.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
           {/* Condition Filter */}
-          <div className="space-y-1.5 text-left">
+          <div className="space-y-1.5">
             <label className="text-xs font-semibold text-gray-600 dark:text-gray-400">Condition</label>
             <select
               value={condition}
@@ -258,7 +225,7 @@ function ProductsContent() {
           </div>
 
           {/* Price Range Filter */}
-          <div className="space-y-2 text-left">
+          <div className="space-y-2">
             <label className="text-xs font-semibold text-gray-600 dark:text-gray-400">Price Range ($)</label>
             <div className="flex gap-2">
               <input
@@ -279,7 +246,7 @@ function ProductsContent() {
           </div>
 
           {/* Location Filter */}
-          <div className="space-y-1.5 text-left">
+          <div className="space-y-1.5">
             <label className="text-xs font-semibold text-gray-600 dark:text-gray-400">Location</label>
             <div className="relative">
               <MapPin className="absolute left-3 top-3.5 text-gray-400" size={14} />
@@ -354,7 +321,9 @@ function ProductsContent() {
                     </div>
                     {product.sellerInfo?.verified && (
                       <div className="absolute top-3 right-3 bg-success-500 text-white rounded-full p-1 border-2 border-white shadow-lg" title="Verified Seller">
-                        <ShieldCheck size={14} fill="currentColor" className="text-white" />
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
                       </div>
                     )}
                   </div>
@@ -379,7 +348,7 @@ function ProductsContent() {
                       <div className="flex items-center justify-between text-xs text-gray-500">
                         <div>
                           <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider block">Seller</span>
-                          <p className="font-bold text-gray-700 truncate max-w-[120px]">{product.sellerInfo?.name}</p>
+                          <p className="font-bold text-gray-700 truncate max-w-[120px]">{product.sellerInfo?.name || 'Seller'}</p>
                         </div>
                         <div className="text-right">
                           <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider block">Location</span>
@@ -390,38 +359,14 @@ function ProductsContent() {
                       </div>
 
                       {/* Interactive Buttons */}
-                      <div className="grid grid-cols-4 gap-1.5 pt-1.5">
-                        <button
-                          onClick={() => addToCart(product)}
-                          className="bg-gray-100 hover:bg-primary-600 hover:text-white text-gray-800 py-2 rounded-xl text-[10px] font-extrabold flex items-center justify-center gap-1 transition shadow-sm hover:scale-105 active:scale-95"
-                          title="Add To Cart"
-                        >
-                          <ShoppingCart size={12} /> Add
-                        </button>
-                        <button
-                          onClick={() => toggleWishlist(product._id)}
-                          className={`py-2 rounded-xl border flex items-center justify-center transition shadow-sm hover:scale-105 active:scale-95 ${
-                            wishlist.includes(product._id)
-                              ? 'bg-danger-55 border-danger-300 text-danger-500'
-                              : 'border-gray-200 text-gray-400 hover:border-danger-400 hover:text-danger-500'
-                          }`}
-                          title="Add To Wishlist"
-                        >
-                          <Heart size={12} fill={wishlist.includes(product._id) ? 'currentColor' : 'none'} />
-                        </button>
-                        <button
-                          onClick={() => toggleComparison(product)}
-                          className={`py-2 rounded-xl border flex items-center justify-center transition shadow-sm hover:scale-105 active:scale-95 ${
-                            compareList.includes(product._id)
-                              ? 'bg-indigo-50 border-indigo-300 text-indigo-650'
-                              : 'border-gray-200 text-gray-400 hover:border-indigo-400 hover:text-indigo-500'
-                          }`}
-                          title="Compare Product"
-                        >
-                          <BarChart3 size={12} />
-                        </button>
+                      <div className="grid grid-cols-2 gap-2 pt-1.5">
+                        <Link href={`/products/${product._id}`} className="block">
+                          <span className="w-full h-full inline-flex items-center justify-center py-2 border border-gray-200 hover:border-primary-500 hover:text-primary-600 font-bold text-[10px] rounded-xl text-gray-700 shadow-sm transition hover:scale-105 active:scale-95 cursor-pointer">
+                            View Details
+                          </span>
+                        </Link>
                         <Link href={`/checkout?productId=${product._id}`} className="block">
-                          <span className="w-full h-full inline-flex items-center justify-center py-2 bg-primary-600 hover:bg-primary-700 text-white text-[10px] font-extrabold rounded-xl shadow-md transition hover:scale-105 active:scale-95 cursor-pointer">
+                          <span className="w-full h-full inline-flex items-center justify-center py-2 bg-primary-600 hover:bg-primary-700 text-white font-bold text-[10px] rounded-xl shadow-md transition hover:scale-105 active:scale-95 cursor-pointer">
                             Buy Now
                           </span>
                         </Link>
@@ -436,7 +381,7 @@ function ProductsContent() {
               <SlidersHorizontal className="mx-auto text-gray-400" size={32} />
               <h3 className="font-bold text-gray-900 dark:text-white text-base">No Products Found</h3>
               <p className="text-xs text-gray-500 dark:text-gray-400 max-w-xs mx-auto">
-                We couldn't find any products matching your active filters. Try adjusting your search query or reset.
+                We couldn't find any products in this category matching your filters.
               </p>
               <button
                 onClick={resetFilters}
@@ -485,14 +430,15 @@ function ProductsContent() {
   );
 }
 
-export default function Products() {
+export default function DynamicCategory() {
   return (
     <Suspense fallback={
       <div className="max-w-7xl mx-auto px-4 py-20 text-center">
-        <p className="text-sm text-gray-500">Loading marketplace listings...</p>
+        <Loader2 className="animate-spin text-primary-500 mx-auto mb-2" size={32} />
+        <p className="text-sm text-gray-500">Loading category page...</p>
       </div>
     }>
-      <ProductsContent />
+      <CategoryContent />
     </Suspense>
   );
 }

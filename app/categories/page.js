@@ -46,7 +46,7 @@ export default function CategoriesExplorer() {
           {categories.map((category) => (
             <Link
               key={category._id}
-              href={`/products?category=${encodeURIComponent(category.name)}`}
+              href={`/categories/${category.name.toLowerCase().replace(/\s+/g, '-')}`}
               className="group bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl overflow-hidden hover:shadow-xl hover:border-primary-500/50 transition-all duration-300 flex flex-col h-full"
             >
               {/* Category Image Cover */}
