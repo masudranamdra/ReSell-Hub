@@ -4,13 +4,14 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { AuthContext, API_URL } from '../../../components/Providers';
-import { Star, Heart, AlertTriangle, ShieldCheck, ShoppingCart, BarChart3, Bell, ArrowLeft, ArrowRight, User } from 'lucide-react';
+import { Star, Heart, AlertTriangle, ShieldCheck, ShoppingCart, BarChart3, Bell, ArrowLeft, User, Sparkles, MapPin, Layers, Award } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { motion } from 'framer-motion';
 
 export default function ProductDetails() {
   const { id } = useParams();
   const router = useRouter();
-  const { token, user } = useContext(AuthContext);
+  const { token } = useContext(AuthContext);
 
   // States
   const [product, setProduct] = useState(null);
@@ -19,6 +20,7 @@ export default function ProductDetails() {
   const [loading, setLoading] = useState(true);
   const [wishlisted, setWishlisted] = useState(false);
   const [inComparison, setInComparison] = useState(false);
+  const [relatedProducts, setRelatedProducts] = useState([]);
   
   // Review form states
   const [rating, setRating] = useState(5);
@@ -37,6 +39,7 @@ export default function ProductDetails() {
   useEffect(() => {
     async function loadData() {
       try {
+        setLoading(true);
         const res = await fetch(`${API_URL}/api/products/${id}`);
         const data = await res.json();
         if (data.success) {
@@ -45,6 +48,13 @@ export default function ProductDetails() {
           
           // Track recently viewed products
           trackRecentlyViewed(data.product);
+
+          // Fetch related products
+          const relRes = await fetch(`${API_URL}/api/products?category=${encodeURIComponent(data.product.category)}&limit=5`);
+          const relData = await relRes.json();
+          if (relData.success) {
+            setRelatedProducts(relData.products.filter(p => p._id !== data.product._id));
+          }
         } else {
           toast.error('Product not found');
           router.push('/products');
@@ -129,6 +139,29 @@ export default function ProductDetails() {
     }
   };
 
+  // Add to cart helper
+  const addToCart = () => {
+    const currentCart = JSON.parse(localStorage.getItem('cart_items') || '[]');
+    const exists = currentCart.some(item => item._id === product._id);
+    if (exists) {
+      toast.error('Item is already in your cart!');
+      return;
+    }
+    currentCart.push({
+      _id: product._id,
+      title: product.title,
+      price: product.price,
+      image: product.images[0],
+      category: product.category,
+      condition: product.condition,
+      sellerInfo: product.sellerInfo,
+      quantity: 1
+    });
+    localStorage.setItem('cart_items', JSON.stringify(currentCart));
+    toast.success('Added to cart!');
+    window.dispatchEvent(new Event('cartUpdate'));
+  };
+
   // Comparison toggle
   const toggleComparison = () => {
     let list = JSON.parse(localStorage.getItem('compare_list') || '[]');
@@ -153,7 +186,7 @@ export default function ProductDetails() {
       });
       localStorage.setItem('compare_list', JSON.stringify(list));
       setInComparison(true);
-      toast.success('Added to product comparison. View it on the comparison page!');
+      toast.success('Added to product comparison!');
     }
   };
 
@@ -204,7 +237,7 @@ export default function ProductDetails() {
       const data = await res.json();
       if (data.success) {
         setSubscribedAlert(true);
-        toast.success('Subscribed successfully. We will notify you if stock is updated!');
+        toast.success('Subscribed to alerts successfully!');
       } else {
         toast.error(data.message || 'Subscription failed');
       }
@@ -271,18 +304,18 @@ export default function ProductDetails() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 transition-colors duration-300">
       {/* Product top path */}
-      <div className="mb-6">
+      <div className="mb-6 text-left">
         <button onClick={() => router.back()} className="flex items-center gap-1 text-xs text-gray-500 hover:text-primary-600 transition">
           <ArrowLeft size={14} /> Back to Products
         </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 text-left">
         {/* Left Column: Images Panel */}
         <div className="space-y-4">
-          <div className="rounded-3xl overflow-hidden bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 h-[450px] relative">
+          <div className="rounded-3xl overflow-hidden bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 h-[450px] relative shadow-lg">
             <img
-              src={product.images[activeImage]}
+              src={product.images[activeImage] || 'https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=600'}
               alt={product.title}
               className="w-full h-full object-cover"
             />
@@ -302,7 +335,7 @@ export default function ProductDetails() {
                   key={index}
                   onClick={() => setActiveImage(index)}
                   className={`w-20 h-16 rounded-xl overflow-hidden border-2 flex-shrink-0 transition ${
-                    activeImage === index ? 'border-primary-500 shadow' : 'border-transparent opacity-70 hover:opacity-100'
+                    activeImage === index ? 'border-primary-500 shadow-md' : 'border-transparent opacity-70 hover:opacity-100'
                   }`}
                 >
                   <img src={img} alt="" className="w-full h-full object-cover" />
@@ -316,40 +349,79 @@ export default function ProductDetails() {
         <div className="space-y-6">
           <div className="space-y-2">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="px-3 py-1 bg-primary-100 text-primary-800 dark:bg-primary-950/40 dark:text-primary-300 text-xs font-semibold rounded-full capitalize">
+              <span className="px-3 py-1 bg-primary-100 text-primary-850 dark:bg-primary-950/40 dark:text-primary-300 text-[10px] font-bold uppercase tracking-wider rounded-full">
                 {product.condition}
               </span>
-              <span className="text-xs text-gray-400">Category: {product.category}</span>
+              <span className="px-3 py-1 bg-indigo-50 text-indigo-700 dark:bg-indigo-950/30 dark:text-indigo-400 text-[10px] font-bold uppercase tracking-wider rounded-full">
+                {product.category}
+              </span>
             </div>
-            <h1 className="text-3xl font-extrabold text-gray-950 dark:text-white leading-tight">
+            <h1 className="text-3xl font-black text-gray-950 dark:text-white leading-tight">
               {product.title}
             </h1>
-            <p className="text-xs text-gray-400 flex items-center gap-1">
-              Location: {product.location}
+            <p className="text-xs text-gray-500 flex items-center gap-1">
+              <MapPin size={12} className="text-primary-500" /> Location: {product.location}
             </p>
           </div>
 
-          <div className="flex items-baseline gap-2 border-b border-gray-200 dark:border-gray-800 pb-4">
-            <span className="text-3xl font-black text-primary-600 dark:text-primary-400">
+          <div className="flex items-baseline gap-4 border-b border-gray-200 dark:border-gray-800 pb-4">
+            <span className="text-3xl font-black bg-gradient-to-r from-primary-600 to-indigo-500 bg-clip-text text-transparent">
               ${product.price}
             </span>
-            <span className="text-xs text-gray-500">Stock available: {product.stock} units</span>
+            <span className="text-xs text-gray-500 dark:text-gray-400 font-semibold bg-gray-100 dark:bg-gray-800 px-2.5 py-1 rounded-lg">
+              Stock available: {product.stock} units
+            </span>
           </div>
+
+          {/* Model and Brand Details */}
+          {(product.brand || product.model) && (
+            <div className="grid grid-cols-2 gap-4 bg-gray-50 dark:bg-gray-900/30 p-4 rounded-2xl border border-gray-100 dark:border-gray-800">
+              {product.brand && (
+                <div>
+                  <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block">Brand</span>
+                  <span className="text-sm font-bold text-gray-800 dark:text-gray-200">{product.brand}</span>
+                </div>
+              )}
+              {product.model && (
+                <div>
+                  <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block">Model</span>
+                  <span className="text-sm font-bold text-gray-800 dark:text-gray-200">{product.model}</span>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Description */}
           <div className="space-y-2">
             <h3 className="font-bold text-gray-900 dark:text-white text-sm">Product Description</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-line">
+            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-line">
               {product.description}
             </p>
           </div>
 
+          {/* Product Features */}
+          {product.features && product.features.length > 0 && (
+            <div className="space-y-2">
+              <h3 className="font-bold text-gray-900 dark:text-white text-sm flex items-center gap-1">
+                <Sparkles size={14} className="text-primary-500" /> Key Features
+              </h3>
+              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-gray-600 dark:text-gray-400 font-medium">
+                {product.features.map((feature, index) => (
+                  <li key={index} className="flex items-center gap-1.5 bg-gray-50 dark:bg-gray-900/20 px-3 py-1.5 rounded-xl border border-gray-100 dark:border-gray-800/80">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary-500"></span>
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           {/* Seller Information */}
-          <div className="bg-gray-50 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-800 p-5 rounded-2xl space-y-3">
+          <div className="bg-gray-50 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-800 p-5 rounded-2xl space-y-3 shadow-sm">
             <h3 className="font-bold text-gray-900 dark:text-white text-xs uppercase tracking-wider">
               Seller Information
             </h3>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-2">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-primary-100 text-primary-600 dark:bg-primary-950 dark:text-primary-400 flex items-center justify-center font-bold">
                   {product.sellerInfo?.name?.charAt(0) || 'S'}
@@ -381,7 +453,7 @@ export default function ProductDetails() {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 pt-2">
+          <div className="flex flex-col sm:flex-row gap-2 pt-2">
             {isOutOfStock ? (
               <button
                 onClick={handleAlertSubscription}
@@ -392,51 +464,61 @@ export default function ProductDetails() {
                 {subscribedAlert ? 'Subscribed to Alerts' : 'Alert When Available'}
               </button>
             ) : (
-              <Link
-                href={`/checkout?productId=${product._id}`}
-                className="flex-grow flex items-center justify-center gap-2 py-3 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl shadow-lg transition"
-              >
-                <ShoppingCart size={18} /> Buy Now
-              </Link>
+              <>
+                <button
+                  onClick={addToCart}
+                  className="flex-grow sm:w-1/3 flex items-center justify-center gap-2 py-3 bg-gray-100 dark:bg-gray-800 hover:bg-primary-600 hover:text-white dark:hover:bg-primary-500 text-gray-800 dark:text-gray-200 font-bold rounded-xl transition shadow-sm border border-gray-200 dark:border-gray-700"
+                >
+                  <ShoppingCart size={18} /> Add To Cart
+                </button>
+                <Link
+                  href={`/checkout?productId=${product._id}`}
+                  className="flex-grow flex items-center justify-center gap-2 py-3 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl shadow-lg transition"
+                >
+                  Buy Now
+                </Link>
+              </>
             )}
 
-            <button
-              onClick={toggleWishlist}
-              className={`p-3 rounded-xl border flex items-center justify-center transition ${
-                wishlisted
-                  ? 'bg-primary-50 border-primary-500 text-primary-600 dark:bg-primary-950/30'
-                  : 'border-gray-300 hover:border-primary-500 text-gray-500 hover:text-primary-600 dark:border-gray-700'
-              }`}
-              title="Add to Wishlist"
-            >
-              <Heart size={20} fill={wishlisted ? 'currentColor' : 'none'} />
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={toggleWishlist}
+                className={`p-3 rounded-xl border flex items-center justify-center transition ${
+                  wishlisted
+                    ? 'bg-primary-50 border-primary-500 text-primary-600 dark:bg-primary-950/30'
+                    : 'border-gray-300 hover:border-primary-500 text-gray-500 hover:text-primary-600 dark:border-gray-700'
+                }`}
+                title="Add to Wishlist"
+              >
+                <Heart size={20} fill={wishlisted ? 'currentColor' : 'none'} />
+              </button>
 
-            <button
-              onClick={toggleComparison}
-              className={`px-4 py-3 rounded-xl border text-xs font-bold transition flex items-center gap-1.5 ${
-                inComparison
-                  ? 'bg-indigo-50 border-indigo-500 text-indigo-600 dark:bg-indigo-950/30'
-                  : 'border-gray-300 hover:border-indigo-500 text-gray-500 hover:text-indigo-600 dark:border-gray-700'
-              }`}
-            >
-              <BarChart3 size={16} />
-              {inComparison ? 'Compared' : 'Compare'}
-            </button>
+              <button
+                onClick={toggleComparison}
+                className={`px-4 py-3 rounded-xl border text-xs font-bold transition flex items-center gap-1.5 ${
+                  inComparison
+                    ? 'bg-indigo-50 border-indigo-500 text-indigo-600 dark:bg-indigo-950/30'
+                    : 'border-gray-300 hover:border-indigo-500 text-gray-500 hover:text-indigo-600 dark:border-gray-700'
+                }`}
+              >
+                <BarChart3 size={16} />
+                {inComparison ? 'Compared' : 'Compare'}
+              </button>
 
-            <button
-              onClick={() => setReportOpen(true)}
-              className="px-4 py-3 rounded-xl border border-gray-300 hover:border-danger-500 text-gray-500 hover:text-danger-500 dark:border-gray-700 text-xs font-bold transition flex items-center gap-1.5"
-            >
-              <AlertTriangle size={16} />
-              Report
-            </button>
+              <button
+                onClick={() => setReportOpen(true)}
+                className="px-4 py-3 rounded-xl border border-gray-300 hover:border-danger-500 text-gray-500 hover:text-danger-500 dark:border-gray-700 text-xs font-bold transition flex items-center gap-1.5"
+              >
+                <AlertTriangle size={16} />
+                Report
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Reviews Section */}
-      <div className="mt-16 grid grid-cols-1 lg:grid-cols-3 gap-12 border-t border-gray-200 dark:border-gray-800 pt-10">
+      <div className="mt-16 grid grid-cols-1 lg:grid-cols-3 gap-12 border-t border-gray-200 dark:border-gray-800 pt-10 text-left">
         {/* Left: Review summary & submit form */}
         <div className="lg:col-span-1 space-y-6">
           <div className="space-y-2">
@@ -444,7 +526,7 @@ export default function ProductDetails() {
             <p className="text-xs text-gray-500">Read what other buyers think of this seller's products</p>
           </div>
 
-          <form onSubmit={handleSubmitReview} className="space-y-4 bg-gray-50 dark:bg-gray-900/40 p-5 rounded-2xl border border-gray-200 dark:border-gray-800">
+          <form onSubmit={handleSubmitReview} className="space-y-4 bg-gray-50 dark:bg-gray-900/40 p-5 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
             <h3 className="font-bold text-xs uppercase tracking-wider text-gray-900 dark:text-white">Leave a Review</h3>
             
             {/* Rating Selector */}
@@ -532,6 +614,59 @@ export default function ProductDetails() {
           )}
         </div>
       </div>
+
+      {/* Related Products Section */}
+      {relatedProducts.length > 0 && (
+        <div className="mt-16 border-t border-gray-250 dark:border-gray-800 pt-10 space-y-6 text-left">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-extrabold text-gray-950 dark:text-white flex items-center gap-2">
+              <Layers className="text-primary-500" size={20} /> Related Products
+            </h2>
+            <Link href="/products" className="text-xs text-primary-600 hover:underline font-bold">
+              View All
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {relatedProducts.map((rel) => (
+              <Link
+                key={rel._id}
+                href={`/products/${rel._id}`}
+                className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 shadow-sm hover:shadow-md transition overflow-hidden flex flex-col group"
+              >
+                <div className="h-32 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 relative">
+                  <img
+                    src={rel.images[0]}
+                    alt={rel.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <span className="absolute top-2 left-2 bg-primary-600 text-white text-[9px] font-extrabold px-2 py-0.5 rounded-full capitalize">
+                    {rel.condition}
+                  </span>
+                </div>
+                <div className="mt-3 space-y-1 flex-grow flex flex-col justify-between">
+                  <div>
+                    <h4 className="font-extrabold text-xs text-gray-900 dark:text-white line-clamp-1 group-hover:text-primary-600 transition">
+                      {rel.title}
+                    </h4>
+                    <p className="text-[10px] text-gray-500 dark:text-gray-400 line-clamp-1">
+                      {rel.location}
+                    </p>
+                  </div>
+                  <div className="flex justify-between items-center pt-2 mt-1 border-t border-gray-50 dark:border-gray-800/80">
+                    <span className="text-xs font-black text-primary-600 dark:text-primary-400">
+                      ${rel.price}
+                    </span>
+                    <span className="text-[9px] font-bold text-gray-400 capitalize">
+                      {rel.category}
+                    </span>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Report Product Modal */}
       {reportOpen && (

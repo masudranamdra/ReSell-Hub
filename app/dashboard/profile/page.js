@@ -2,7 +2,7 @@
 
 import React, { useState, useContext, useEffect } from 'react';
 import { AuthContext } from '../../../components/Providers';
-import { User, Phone, MapPin, Lock, Upload, Loader2 } from 'lucide-react';
+import { User, Phone, MapPin, Lock, Image as ImageIcon, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function ProfileSettings() {
@@ -17,7 +17,6 @@ export default function ProfileSettings() {
   });
 
   const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -35,38 +34,6 @@ export default function ProfileSettings() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // ImageBB upload helper
-  const handleImageUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    setUploading(true);
-    const toastId = toast.loading('Uploading profile image to ImageBB...');
-
-    try {
-      const uploadData = new FormData();
-      uploadData.append('image', file);
-
-      const apiKey = '8ca6992d99d1944747ebc79f323a7bbd';
-      const res = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
-        method: 'POST',
-        body: uploadData
-      });
-      const data = await res.json();
-
-      if (data.success) {
-        setFormData(prev => ({ ...prev, photo: data.data.url }));
-        toast.success('Image uploaded successfully!', { id: toastId });
-      } else {
-        toast.error('Upload failed.', { id: toastId });
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error('Failed to connect to ImageBB.', { id: toastId });
-    } finally {
-      setUploading(false);
-    }
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -99,34 +66,28 @@ export default function ProfileSettings() {
 
       <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-6 sm:p-8 rounded-3xl shadow-sm max-w-2xl">
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Profile Image upload layout */}
-          <div className="flex flex-col sm:flex-row items-center gap-6 pb-6 border-b border-gray-100 dark:border-gray-800">
+          {/* Profile Photo URL */}
+          <div className="flex flex-col sm:flex-row items-start gap-6 pb-6 border-b border-gray-100 dark:border-gray-800">
             <img
               src={formData.photo || 'https://i.pravatar.cc/300?img=9'}
               alt="Avatar"
-              className="w-24 h-24 rounded-full object-cover border-4 border-primary-500 shadow-sm"
+              className="w-20 h-20 rounded-full object-cover border-4 border-primary-500 shadow-sm flex-shrink-0"
+              onError={(e) => { e.target.src = 'https://i.pravatar.cc/300?img=9'; }}
             />
-            <div className="text-center sm:text-left space-y-2">
-              <h4 className="font-bold text-gray-900 dark:text-white text-sm">Upload Avatar</h4>
-              <p className="text-xs text-gray-400">JPG, PNG, WebP up to 4MB. Automatically synced.</p>
-              <label className="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-xs font-semibold rounded-lg cursor-pointer transition">
-                {uploading ? (
-                  <>
-                    <Loader2 className="animate-spin text-primary-500" size={14} /> Uploading...
-                  </>
-                ) : (
-                  <>
-                    <Upload size={14} /> Upload Image
-                  </>
-                )}
+            <div className="flex-grow space-y-2">
+              <h4 className="font-bold text-gray-900 dark:text-white text-sm">Profile Photo URL</h4>
+              <p className="text-xs text-gray-400">Paste an ImageBB, Cloudinary, or any direct image link.</p>
+              <div className="relative">
+                <ImageIcon className="absolute left-3 top-3 text-gray-400" size={15} />
                 <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="hidden"
-                  disabled={uploading}
+                  type="url"
+                  name="photo"
+                  value={formData.photo}
+                  onChange={handleChange}
+                  className="w-full pl-9 pr-3 py-2.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl focus:ring-1 focus:ring-primary-500 outline-none text-xs text-gray-900 dark:text-white"
+                  placeholder="https://i.ibb.co/your-photo.jpg"
                 />
-              </label>
+              </div>
             </div>
           </div>
 
@@ -209,7 +170,7 @@ export default function ProfileSettings() {
 
           <button
             type="submit"
-            disabled={loading || uploading}
+            disabled={loading}
             className="px-6 py-2.5 bg-primary-600 hover:bg-primary-700 disabled:bg-primary-400 text-white font-bold rounded-xl text-xs shadow-md transition flex items-center gap-1.5"
           >
             {loading ? <Loader2 className="animate-spin" size={14} /> : null}

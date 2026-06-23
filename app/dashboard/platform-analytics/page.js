@@ -183,7 +183,7 @@ export default function PlatformAnalytics() {
             Top Selling Products Summary
           </h3>
           <div className="space-y-4">
-            {charts.topSellingProducts.map((p, idx) => (
+            {charts?.topSellingProducts?.map((p, idx) => (
               <div key={idx} className="flex justify-between items-center border-b border-gray-50 dark:border-gray-800 pb-2">
                 <div className="space-y-0.5">
                   <h4 className="font-bold text-sm text-gray-900 dark:text-white">{p.name}</h4>

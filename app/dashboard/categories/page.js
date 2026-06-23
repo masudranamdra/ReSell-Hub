@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext, API_URL } from '../../../components/Providers';
-import { CheckSquare, Edit3, Trash2, Loader2, Plus, Upload } from 'lucide-react';
+import { CheckSquare, Edit3, Trash2, Loader2, Plus, Image as ImageIcon } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function CategoryManagement() {
@@ -11,7 +11,6 @@ export default function CategoryManagement() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [uploading, setUploading] = useState(false);
 
   // Form states (handles both create & edit)
   const [editId, setEditId] = useState(null);
@@ -36,37 +35,6 @@ export default function CategoryManagement() {
       console.error(err);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleImageUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    setUploading(true);
-    const toastId = toast.loading('Uploading category banner to ImageBB...');
-
-    try {
-      const uploadData = new FormData();
-      uploadData.append('image', file);
-
-      const apiKey = '8ca6992d99d1944747ebc79f323a7bbd';
-      const res = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
-        method: 'POST',
-        body: uploadData
-      });
-      const data = await res.json();
-
-      if (data.success) {
-        setForm(prev => ({ ...prev, image: data.data.url }));
-        toast.success('Category banner uploaded!', { id: toastId });
-      } else {
-        toast.error('Upload failed.', { id: toastId });
-      }
-    } catch (err) {
-      toast.error('Failed to upload image.', { id: toastId });
-    } finally {
-      setUploading(false);
     }
   };
 
@@ -183,46 +151,34 @@ export default function CategoryManagement() {
               />
             </div>
 
-            {/* Category Image upload */}
+            {/* Category Image URL */}
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-gray-600 dark:text-gray-400">Category Image</label>
-              <div className="flex items-center gap-4">
-                {form.image ? (
-                  <img
-                    src={form.image}
-                    alt="Category Banner Preview"
-                    className="w-12 h-12 rounded-xl object-cover border border-primary-500"
-                  />
-                ) : (
-                  <div className="w-12 h-12 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center border border-gray-200 dark:border-gray-700">
-                    <Plus className="text-gray-400" size={18} />
-                  </div>
-                )}
-                <label className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-xs font-semibold rounded-lg cursor-pointer transition">
-                  {uploading ? (
-                    <>
-                      <Loader2 className="animate-spin text-primary-500" size={12} /> Uploading...
-                    </>
-                  ) : (
-                    <>
-                      <Upload size={12} /> Banner
-                    </>
-                  )}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                    disabled={uploading}
-                  />
-                </label>
-              </div>
+              <label className="text-xs font-semibold text-gray-600 dark:text-gray-400 flex items-center gap-1">
+                <ImageIcon size={13} className="text-primary-500" /> Category Image URL
+              </label>
+              {form.image && (
+                <img
+                  src={form.image}
+                  alt="Preview"
+                  className="w-full h-28 object-cover rounded-xl border border-gray-200 dark:border-gray-700"
+                  onError={(e) => { e.target.style.display = 'none'; }}
+                />
+              )}
+              <input
+                type="url"
+                value={form.image}
+                onChange={(e) => setForm({ ...form, image: e.target.value })}
+                required
+                className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl outline-none text-xs text-gray-900 dark:text-white focus:ring-1 focus:ring-primary-500"
+                placeholder="https://i.ibb.co/example-banner.jpg"
+              />
+              <p className="text-[10px] text-gray-400">ImageBB, Cloudinary or any direct image URL.</p>
             </div>
 
             <div className="flex gap-2 pt-2">
               <button
                 type="submit"
-                disabled={submitting || uploading}
+                disabled={submitting}
                 className="flex-grow py-2 bg-primary-600 hover:bg-primary-700 disabled:bg-primary-400 text-white font-bold text-xs rounded-xl shadow transition"
               >
                 {submitting ? <Loader2 className="animate-spin mr-1 inline" size={12} /> : null}

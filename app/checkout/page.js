@@ -12,10 +12,11 @@ function CheckoutContent() {
   const { token, user } = useContext(AuthContext);
 
   const productId = searchParams.get('productId');
+  const qtyParam = searchParams.get('qty');
 
   // States
   const [product, setProduct] = useState(null);
-  const [quantity, setQuantity] = useState(1);
+  const [quantity, setQuantity] = useState(qtyParam ? Number(qtyParam) : 1);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
 

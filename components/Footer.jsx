@@ -98,15 +98,15 @@ export default function Footer() {
             <ul className="space-y-3">
               <li className="flex items-start gap-2 text-sm text-gray-500 dark:text-gray-400">
                 <MapPin size={16} className="text-primary-500 mt-0.5 flex-shrink-0" />
-                <span>Dhaka, Bangladesh</span>
+                <span>Dinajpur, Bangladesh</span>
               </li>
               <li className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                 <Phone size={16} className="text-primary-500 flex-shrink-0" />
-                <span>+880 1712 345678</span>
+                <span>+880 18770 80660</span>
               </li>
               <li className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                 <Mail size={16} className="text-primary-500 flex-shrink-0" />
-                <span>info@resellhub.com</span>
+                <span>masud.dev01@gmail.com</span>
               </li>
             </ul>
           </div>

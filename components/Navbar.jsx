@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { AuthContext, ThemeContext } from '../components/Providers';
-import { Sun, Moon, Menu, X, ChevronDown, User, LogOut, LayoutDashboard, ShoppingBag } from 'lucide-react';
+import { Sun, Moon, Menu, X, ChevronDown, User, LogOut, LayoutDashboard, ShoppingBag, ShoppingCart } from 'lucide-react';
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -13,6 +13,17 @@ export default function Navbar() {
   
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [cartCount, setCartCount] = useState(0);
+
+  useEffect(() => {
+    const updateCount = () => {
+      const items = JSON.parse(localStorage.getItem('cart_items') || '[]');
+      setCartCount(items.length);
+    };
+    updateCount();
+    window.addEventListener('cartUpdate', updateCount);
+    return () => window.removeEventListener('cartUpdate', updateCount);
+  }, []);
 
   const isActive = (path) => pathname === path;
 
@@ -66,6 +77,20 @@ export default function Navbar() {
 
           {/* User Controls & Theme Toggle */}
           <div className="hidden md:flex items-center space-x-4">
+            {/* Cart Link with Badge */}
+            <Link
+              href="/cart"
+              className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 transition relative"
+              aria-label="View shopping cart"
+            >
+              <ShoppingCart size={20} />
+              {cartCount > 0 && (
+                <span className="absolute top-0.5 right-0.5 bg-primary-600 text-white text-[9px] font-black w-4.5 h-4.5 rounded-full flex items-center justify-center border border-white dark:border-gray-900 animate-pulse">
+                  {cartCount}
+                </span>
+              )}
+            </Link>
+
             {/* Theme Toggle Button */}
             <button
               onClick={toggleTheme}
@@ -97,22 +122,43 @@ export default function Navbar() {
 
                 {/* Dropdown Menu */}
                 {dropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-48 rounded-xl shadow-lg py-1 bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 focus:outline-none border border-gray-100 dark:border-gray-700">
+                  <div className="absolute right-0 mt-2 w-52 rounded-2xl shadow-xl py-2 bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 focus:outline-none border border-gray-100 dark:border-gray-700 animate-fade-in">
+                    {/* User profile brief */}
+                    <div className="px-4 py-2 border-b border-gray-100 dark:border-gray-700 pb-2 mb-1 flex items-center gap-2.5">
+                      <img
+                        src={user.photo || 'https://i.pravatar.cc/300?img=9'}
+                        alt=""
+                        className="w-8 h-8 rounded-full object-cover border border-primary-500"
+                      />
+                      <div className="text-left">
+                        <p className="text-xs font-bold text-gray-900 dark:text-white line-clamp-1 leading-none">{user.name}</p>
+                        <span className="text-[9px] text-gray-400 capitalize">{user.role}</span>
+                      </div>
+                    </div>
+
                     <Link
                       href="/dashboard"
                       onClick={() => setDropdownOpen(false)}
-                      className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+                      className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-gray-750 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
                     >
-                      <LayoutDashboard size={16} />
-                      Dashboard
+                      <LayoutDashboard size={15} />
+                      My Profile
                     </Link>
                     <Link
                       href="/dashboard/profile"
                       onClick={() => setDropdownOpen(false)}
-                      className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+                      className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-gray-750 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
                     >
-                      <User size={16} />
-                      Profile Settings
+                      <User size={15} />
+                      Setting
+                    </Link>
+                    <Link
+                      href="/dashboard/orders"
+                      onClick={() => setDropdownOpen(false)}
+                      className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-gray-750 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+                    >
+                      <ShoppingBag size={15} />
+                      Orders
                     </Link>
                     <hr className="border-gray-100 dark:border-gray-700 my-1" />
                     <button
@@ -120,9 +166,13 @@ export default function Navbar() {
                         setDropdownOpen(false);
                         logout();
                       }}
-                      className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-danger-500 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+                      className="flex items-center gap-2.5 w-full text-left px-4 py-2 text-xs font-semibold text-danger-500 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
                     >
-                      <LogOut size={16} />
+                      <img
+                        src={user.photo || 'https://i.pravatar.cc/300?img=9'}
+                        alt=""
+                        className="w-5 h-5 rounded-full object-cover border border-danger-500"
+                      />
                       Logout
                     </button>
                   </div>
@@ -148,6 +198,20 @@ export default function Navbar() {
 
           {/* Mobile menu button */}
           <div className="flex items-center space-x-2 md:hidden">
+            {/* Mobile Cart Link */}
+            <Link
+              href="/cart"
+              className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 transition relative"
+              aria-label="View shopping cart"
+            >
+              <ShoppingCart size={18} />
+              {cartCount > 0 && (
+                <span className="absolute top-0.5 right-0.5 bg-primary-600 text-white text-[8px] font-black w-3.5 h-3.5 rounded-full flex items-center justify-center border border-white dark:border-gray-900 animate-pulse">
+                  {cartCount}
+                </span>
+              )}
+            </Link>
+
             <button
               onClick={toggleTheme}
               className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 transition"
@@ -182,6 +246,22 @@ export default function Navbar() {
               {link.name}
             </Link>
           ))}
+          <Link
+            href="/cart"
+            onClick={() => setMobileOpen(false)}
+            className={`block px-3 py-2 rounded-md text-base font-medium flex items-center justify-between ${
+              isActive('/cart')
+                ? 'bg-primary-50 text-primary-600 dark:bg-gray-800 dark:text-primary-400'
+                : 'text-gray-600 hover:bg-gray-50 hover:text-primary-600 dark:text-gray-300 dark:hover:bg-gray-800'
+            }`}
+          >
+            <span>Shopping Cart</span>
+            {cartCount > 0 && (
+              <span className="bg-primary-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                {cartCount}
+              </span>
+            )}
+          </Link>
           {user && (
             <Link
               href="/dashboard"
@@ -214,19 +294,38 @@ export default function Navbar() {
                 </div>
               </div>
               <Link
+                href="/dashboard"
+                onClick={() => setMobileOpen(false)}
+                className="block px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800"
+              >
+                My Profile
+              </Link>
+              <Link
                 href="/dashboard/profile"
                 onClick={() => setMobileOpen(false)}
                 className="block px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800"
               >
-                Profile Settings
+                Setting
+              </Link>
+              <Link
+                href="/dashboard/orders"
+                onClick={() => setMobileOpen(false)}
+                className="block px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800"
+              >
+                Orders
               </Link>
               <button
                 onClick={() => {
                   setMobileOpen(false);
                   logout();
                 }}
-                className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-danger-500 hover:bg-gray-50 dark:hover:bg-gray-800"
+                className="w-full text-left px-3 py-2 rounded-md text-base font-medium text-danger-500 hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center gap-2"
               >
+                <img
+                  src={user.photo || 'https://i.pravatar.cc/300?img=9'}
+                  alt=""
+                  className="w-6 h-6 rounded-full object-cover border border-danger-500"
+                />
                 Logout
               </button>
             </div>

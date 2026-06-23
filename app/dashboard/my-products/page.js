@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext, API_URL } from '../../../components/Providers';
-import { Layers, Edit3, Trash2, Search, Loader2, Eye, Plus, Upload } from 'lucide-react';
+import { Layers, Edit3, Trash2, Search, Loader2, Eye, Plus, Image as ImageIcon } from 'lucide-react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 
@@ -28,10 +28,12 @@ export default function MyProducts() {
     price: '',
     stock: '',
     location: '',
+    brand: '',
+    model: '',
+    features: '',
     images: []
   });
   const [updating, setUpdating] = useState(false);
-  const [uploadingEdit, setUploadingEdit] = useState(false);
 
   useEffect(() => {
     if (token) {
@@ -95,41 +97,13 @@ export default function MyProducts() {
       price: product.price.toString(),
       stock: product.stock.toString(),
       location: product.location,
+      brand: product.brand || '',
+      model: product.model || '',
+      features: Array.isArray(product.features) ? product.features.join(', ') : '',
       images: product.images
     });
   };
 
-  // ImageBB upload for edit
-  const handleEditImageUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    setUploadingEdit(true);
-    const toastId = toast.loading('Uploading replacement image...');
-
-    try {
-      const uploadData = new FormData();
-      uploadData.append('image', file);
-
-      const apiKey = '8ca6992d99d1944747ebc79f323a7bbd';
-      const res = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
-        method: 'POST',
-        body: uploadData
-      });
-      const data = await res.json();
-
-      if (data.success) {
-        setEditForm(prev => ({ ...prev, images: [...prev.images, data.data.url] }));
-        toast.success('Uploaded successfully!', { id: toastId });
-      } else {
-        toast.error('Upload failed.', { id: toastId });
-      }
-    } catch (err) {
-      toast.error('Connection error.', { id: toastId });
-    } finally {
-      setUploadingEdit(false);
-    }
-  };
 
   const removeEditImage = (idxToRemove) => {
     setEditForm(prev => ({
@@ -145,6 +119,11 @@ export default function MyProducts() {
     if (Number(editForm.stock) < 0) return toast.error('Stock cannot be negative');
     if (editForm.images.length === 0) return toast.error('At least one image is required');
 
+    const featuresArr = editForm.features
+      .split(',')
+      .map((item) => item.trim())
+      .filter((item) => item.length > 0);
+
     setUpdating(true);
     try {
       const res = await fetch(`${API_URL}/api/products/${editingProduct._id}`, {
@@ -156,7 +135,8 @@ export default function MyProducts() {
         body: JSON.stringify({
           ...editForm,
           price: Number(editForm.price),
-          stock: Number(editForm.stock)
+          stock: Number(editForm.stock),
+          features: featuresArr
         })
       });
       const data = await res.json();
@@ -411,6 +391,42 @@ export default function MyProducts() {
                 />
               </div>
 
+              {/* Brand */}
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-gray-600 dark:text-gray-400">Brand</label>
+                <input
+                  type="text"
+                  value={editForm.brand}
+                  onChange={(e) => setEditForm({ ...editForm, brand: e.target.value })}
+                  className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl outline-none text-xs text-gray-900 dark:text-white focus:ring-1 focus:ring-primary-500"
+                  placeholder="e.g. Sony"
+                />
+              </div>
+
+              {/* Model */}
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-gray-600 dark:text-gray-400">Model</label>
+                <input
+                  type="text"
+                  value={editForm.model}
+                  onChange={(e) => setEditForm({ ...editForm, model: e.target.value })}
+                  className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl outline-none text-xs text-gray-900 dark:text-white focus:ring-1 focus:ring-primary-500"
+                  placeholder="e.g. PlayStation 5"
+                />
+              </div>
+
+              {/* Features */}
+              <div className="space-y-1 sm:col-span-2">
+                <label className="text-xs font-semibold text-gray-600 dark:text-gray-400">Product Features (Comma-separated)</label>
+                <input
+                  type="text"
+                  value={editForm.features}
+                  onChange={(e) => setEditForm({ ...editForm, features: e.target.value })}
+                  className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl outline-none text-xs text-gray-900 dark:text-white focus:ring-1 focus:ring-primary-500"
+                  placeholder="e.g. 100% Genuine, Water Resistant, Original Box"
+                />
+              </div>
+
               <div className="space-y-1 sm:col-span-2">
                 <label className="text-xs font-semibold text-gray-600 dark:text-gray-400">Description</label>
                 <textarea
@@ -422,40 +438,53 @@ export default function MyProducts() {
                 />
               </div>
 
-              {/* Images preview & upload */}
-              <div className="space-y-2 sm:col-span-2">
-                <label className="text-xs font-semibold text-gray-600 dark:text-gray-400">Images</label>
-                <div className="flex flex-wrap gap-3 items-center">
-                  {editForm.images.map((img, idx) => (
-                    <div key={idx} className="relative w-16 h-16 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700">
-                      <img src={img} alt="" className="w-full h-full object-cover" />
-                      <button
-                        type="button"
-                        onClick={() => removeEditImage(idx)}
-                        className="absolute top-0.5 right-0.5 p-0.5 bg-danger-500 text-white rounded-full transition"
-                      >
-                        <Trash2 size={8} />
-                      </button>
-                    </div>
-                  ))}
-                  <label className="w-16 h-16 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-primary-500 transition bg-gray-50 dark:bg-gray-950/20">
-                    {uploadingEdit ? (
-                      <Loader2 className="animate-spin text-primary-500" size={14} />
-                    ) : (
-                      <>
-                        <Plus className="text-gray-400" size={14} />
-                        <span className="text-[9px] text-gray-500">Add</span>
-                      </>
+              {/* Images — URL inputs */}
+              <div className="space-y-3 sm:col-span-2">
+                <label className="text-xs font-semibold text-gray-600 dark:text-gray-400 flex items-center gap-1">
+                  <ImageIcon size={13} className="text-primary-500" /> Product Images (URLs)
+                </label>
+
+                {/* Existing images list with remove */}
+                {editForm.images.map((img, idx) => (
+                  <div key={idx} className="flex items-center gap-2">
+                    {img && (
+                      <img
+                        src={img}
+                        alt=""
+                        className="w-10 h-10 rounded-lg object-cover border border-gray-200 dark:border-gray-700 flex-shrink-0"
+                        onError={(e) => { e.target.style.display = 'none'; }}
+                      />
                     )}
                     <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleEditImageUpload}
-                      className="hidden"
-                      disabled={uploadingEdit}
+                      type="url"
+                      value={img}
+                      onChange={(e) => {
+                        const updated = [...editForm.images];
+                        updated[idx] = e.target.value;
+                        setEditForm(prev => ({ ...prev, images: updated }));
+                      }}
+                      className="flex-grow px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl outline-none text-xs text-gray-900 dark:text-white focus:ring-1 focus:ring-primary-500"
+                      placeholder={`Image URL ${idx + 1}`}
                     />
-                  </label>
-                </div>
+                    <button
+                      type="button"
+                      onClick={() => removeEditImage(idx)}
+                      className="p-1.5 bg-danger-500 hover:bg-danger-600 text-white rounded-lg transition flex-shrink-0"
+                    >
+                      <Trash2 size={12} />
+                    </button>
+                  </div>
+                ))}
+
+                {/* Add another URL */}
+                <button
+                  type="button"
+                  onClick={() => setEditForm(prev => ({ ...prev, images: [...prev.images, ''] }))}
+                  className="flex items-center gap-1.5 text-xs text-primary-600 dark:text-primary-400 font-semibold hover:underline"
+                >
+                  <Plus size={13} /> Add another image URL
+                </button>
+                <p className="text-[10px] text-gray-400">Use ImageBB, Cloudinary, or any direct image URL.</p>
               </div>
             </div>
 

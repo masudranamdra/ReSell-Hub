@@ -4,6 +4,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { AuthContext } from '../../components/Providers';
 import Link from 'next/link';
+import toast from 'react-hot-toast';
 import {
   LayoutDashboard, ShoppingBag, Heart, CreditCard, User, ShoppingCart,
   Layers, BarChart3, Users, CheckSquare, Eye, ShieldAlert, LogOut, Loader2, Menu, X
@@ -15,13 +16,83 @@ export default function DashboardLayout({ children }) {
   const { user, token, authLoading, logout } = useContext(AuthContext);
   
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [viewMode, setViewMode] = useState('seller');
 
-  // Guards the dashboard route
   useEffect(() => {
-    if (!authLoading && !token) {
+    if (typeof window !== 'undefined') {
+      const savedMode = localStorage.getItem('dashboardViewMode');
+      if (savedMode) {
+        setViewMode(savedMode);
+      }
+    }
+  }, []);
+
+  const handleViewModeChange = (mode) => {
+    setViewMode(mode);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('dashboardViewMode', mode);
+    }
+    if (mode === 'seller') {
+      router.push('/dashboard/seller');
+    } else {
+      router.push('/dashboard/buyer');
+    }
+  };
+
+  // Guards the dashboard routes against unauthorized access
+  useEffect(() => {
+    if (authLoading) return;
+    if (!token || !user) {
+      router.push('/login');
+      return;
+    }
+
+    const path = pathname;
+    
+    // Admin-only paths
+    const adminOnlyPaths = [
+      '/dashboard/admin',
+      '/dashboard/users',
+      '/dashboard/manage-products',
+      '/dashboard/categories',
+      '/dashboard/platform-analytics',
+      '/dashboard/all-payments'
+    ];
+    
+    // Seller-only paths (Admin also allowed)
+    const sellerOnlyPaths = [
+      '/dashboard/seller',
+      '/dashboard/seller/add-product',
+      '/dashboard/my-products',
+      '/dashboard/manage-orders',
+      '/dashboard/sales-analytics'
+    ];
+
+    // Buyer-only paths (Admin also allowed)
+    const buyerOnlyPaths = [
+      '/dashboard/buyer',
+      '/dashboard/orders',
+      '/dashboard/wishlist',
+      '/dashboard/payments'
+    ];
+
+    if (adminOnlyPaths.some(p => path.startsWith(p)) && user.role !== 'admin') {
+      toast.error('Access Denied. You are not authorized as Admin.');
+      logout();
+      router.push('/login');
+    } else if (sellerOnlyPaths.some(p => path.startsWith(p)) && user.role !== 'seller' && user.role !== 'admin') {
+      if (path === '/dashboard/seller/add-product') {
+        // Allow buyers to access add-product page to see approval warning
+      } else {
+        toast.error('Access Denied. You do not have Seller permissions.');
+        router.push('/dashboard/buyer');
+      }
+    } else if (buyerOnlyPaths.some(p => path.startsWith(p)) && user.role !== 'buyer' && user.role !== 'seller' && user.role !== 'admin') {
+      toast.error('Access Denied. You do not have Buyer permissions.');
+      logout();
       router.push('/login');
     }
-  }, [authLoading, token, router]);
+  }, [authLoading, token, user, pathname, router, logout]);
 
   if (authLoading) {
     return (
@@ -36,36 +107,47 @@ export default function DashboardLayout({ children }) {
 
   // Sidebar Links based on Roles
   const getSidebarLinks = () => {
-    switch (user.role) {
-      case 'admin':
+    if (user.role === 'admin') {
+      return [
+        { name: 'Dashboard Overview', path: '/dashboard/admin', icon: <LayoutDashboard size={18} /> },
+        { name: 'Manage Users', path: '/dashboard/users', icon: <Users size={18} /> },
+        { name: 'Manage Products', path: '/dashboard/manage-products', icon: <Layers size={18} /> },
+        { name: 'Category CRUD', path: '/dashboard/categories', icon: <CheckSquare size={18} /> },
+        { name: 'Platform Analytics', path: '/dashboard/platform-analytics', icon: <BarChart3 size={18} /> },
+        { name: 'Payments Audit', path: '/dashboard/all-payments', icon: <CreditCard size={18} /> },
+        { name: 'Profile Settings', path: '/dashboard/profile', icon: <User size={18} /> }
+      ];
+    }
+
+    if (user.role === 'seller') {
+      if (viewMode === 'buyer') {
         return [
-          { name: 'Dashboard Overview', path: '/dashboard', icon: <LayoutDashboard size={18} /> },
-          { name: 'Manage Users', path: '/dashboard/users', icon: <Users size={18} /> },
-          { name: 'Manage Products', path: '/dashboard/manage-products', icon: <Layers size={18} /> },
-          { name: 'Category CRUD', path: '/dashboard/categories', icon: <CheckSquare size={18} /> },
-          { name: 'Platform Analytics', path: '/dashboard/platform-analytics', icon: <BarChart3 size={18} /> },
-          { name: 'Payments Audit', path: '/dashboard/all-payments', icon: <CreditCard size={18} /> },
-          { name: 'Profile Settings', path: '/dashboard/profile', icon: <User size={18} /> }
-        ];
-      case 'seller':
-        return [
-          { name: 'Dashboard Overview', path: '/dashboard', icon: <LayoutDashboard size={18} /> },
-          { name: 'Add Product', path: '/dashboard/add-product', icon: <ShoppingCart size={18} /> },
-          { name: 'My Products', path: '/dashboard/my-products', icon: <Layers size={18} /> },
-          { name: 'Manage Orders', path: '/dashboard/manage-orders', icon: <ShoppingBag size={18} /> },
-          { name: 'Sales Analytics', path: '/dashboard/sales-analytics', icon: <BarChart3 size={18} /> },
-          { name: 'Profile Settings', path: '/dashboard/profile', icon: <User size={18} /> }
-        ];
-      case 'buyer':
-      default:
-        return [
-          { name: 'Dashboard Overview', path: '/dashboard', icon: <LayoutDashboard size={18} /> },
+          { name: 'Dashboard Overview', path: '/dashboard/buyer', icon: <LayoutDashboard size={18} /> },
           { name: 'My Orders', path: '/dashboard/orders', icon: <ShoppingBag size={18} /> },
           { name: 'Wishlist', path: '/dashboard/wishlist', icon: <Heart size={18} /> },
           { name: 'Payment History', path: '/dashboard/payments', icon: <CreditCard size={18} /> },
           { name: 'Profile Settings', path: '/dashboard/profile', icon: <User size={18} /> }
         ];
+      } else {
+        return [
+          { name: 'Dashboard Overview', path: '/dashboard/seller', icon: <LayoutDashboard size={18} /> },
+          { name: 'Add Product', path: '/dashboard/seller/add-product', icon: <ShoppingCart size={18} /> },
+          { name: 'My Products', path: '/dashboard/my-products', icon: <Layers size={18} /> },
+          { name: 'Manage Orders', path: '/dashboard/manage-orders', icon: <ShoppingBag size={18} /> },
+          { name: 'Sales Analytics', path: '/dashboard/sales-analytics', icon: <BarChart3 size={18} /> },
+          { name: 'Profile Settings', path: '/dashboard/profile', icon: <User size={18} /> }
+        ];
+      }
     }
+
+    // Default: buyer role
+    return [
+      { name: 'Dashboard Overview', path: '/dashboard/buyer', icon: <LayoutDashboard size={18} /> },
+      { name: 'My Orders', path: '/dashboard/orders', icon: <ShoppingBag size={18} /> },
+      { name: 'Wishlist', path: '/dashboard/wishlist', icon: <Heart size={18} /> },
+      { name: 'Payment History', path: '/dashboard/payments', icon: <CreditCard size={18} /> },
+      { name: 'Profile Settings', path: '/dashboard/profile', icon: <User size={18} /> }
+    ];
   };
 
   const menuLinks = getSidebarLinks();
@@ -105,6 +187,37 @@ export default function DashboardLayout({ children }) {
             </span>
           </div>
         </div>
+
+        {/* View Switcher Toggle for Sellers */}
+        {user.role === 'seller' && (
+          <div className="px-4 py-3 mx-4 my-3 bg-gray-50 dark:bg-gray-850 rounded-xl border border-gray-100 dark:border-gray-800">
+            <label className="text-[9px] uppercase tracking-wider text-gray-400 dark:text-gray-500 font-bold block mb-1.5">
+              Dashboard View Mode
+            </label>
+            <div className="grid grid-cols-2 gap-1 p-0.5 bg-gray-200/50 dark:bg-gray-900 rounded-lg">
+              <button
+                onClick={() => handleViewModeChange('seller')}
+                className={`py-1 rounded-md text-[10px] font-bold transition-all ${
+                  viewMode === 'seller'
+                    ? 'bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-sm border border-gray-100 dark:border-gray-700/50'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                }`}
+              >
+                Seller
+              </button>
+              <button
+                onClick={() => handleViewModeChange('buyer')}
+                className={`py-1 rounded-md text-[10px] font-bold transition-all ${
+                  viewMode === 'buyer'
+                    ? 'bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-sm border border-gray-100 dark:border-gray-700/50'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                }`}
+              >
+                Buyer
+              </button>
+            </div>
+          </div>
+        )}
 
         <nav className="p-4 space-y-1.5">
           {menuLinks.map((item) => (
