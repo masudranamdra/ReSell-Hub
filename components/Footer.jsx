@@ -9,9 +9,16 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand Column */}
           <div className="space-y-4">
-            <span className="text-2xl font-extrabold bg-gradient-to-r from-primary-600 to-indigo-500 bg-clip-text text-transparent tracking-wide">
-              ReSell<span className="text-primary-500">Hub</span>
-            </span>
+            <div className="flex items-center gap-2">
+              <img
+                src="https://i.ibb.co.com/BV1jk40k/faiz00-s-7207516.png"
+                alt="ReSell Hub Logo"
+                className="h-10 w-auto object-contain"
+              />
+              <span className="text-2xl font-extrabold bg-gradient-to-r from-primary-600 to-indigo-500 bg-clip-text text-transparent tracking-wide">
+                ReSell<span className="text-primary-500">Hub</span>
+              </span>
+            </div>
             <p className="text-sm text-gray-500 dark:text-gray-400">
               The premier marketplace to buy, sell, and list pre-loved products. Promote sustainability by reducing waste, helping our ecology, and earning money from unused items.
             </p>

@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Mail, Phone, MapPin, Send, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { API_URL } from '../../components/Providers';
 
 export default function ContactUs() {
   const [form, setForm] = useState({
@@ -13,18 +14,45 @@ export default function ContactUs() {
   });
   const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.name.trim() || !form.email.trim() || !form.subject.trim() || !form.message.trim()) {
       return toast.error('Please fill all contact fields');
     }
 
+    const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+    if (!emailRegex.test(form.email.trim())) {
+      return toast.error('Please enter a valid email address');
+    }
+
     setSubmitting(true);
-    setTimeout(() => {
-      toast.success('Your message has been sent to ReSell Hub support!');
-      setForm({ name: '', email: '', subject: '', message: '' });
+    try {
+      const res = await fetch(`${API_URL}/api/contact`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name: form.name.trim(),
+          email: form.email.trim().toLowerCase(),
+          subject: form.subject.trim(),
+          message: form.message.trim()
+        })
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        toast.success(data.message || 'Your message has been sent successfully!');
+        setForm({ name: '', email: '', subject: '', message: '' });
+      } else {
+        toast.error(data.message || 'Failed to dispatch email. Please try again.');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Network error. Failed to send message.');
+    } finally {
       setSubmitting(false);
-    }, 1500);
+    }
   };
 
   return (

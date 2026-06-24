@@ -9,6 +9,7 @@ import {
   LayoutDashboard, ShoppingBag, Heart, CreditCard, User, ShoppingCart,
   Layers, BarChart3, Users, CheckSquare, Eye, ShieldAlert, LogOut, Loader2, Menu, X
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function DashboardLayout({ children }) {
   const router = useRouter();
@@ -154,63 +155,81 @@ export default function DashboardLayout({ children }) {
   const isActive = (path) => pathname === path;
 
   return (
-    <div className="min-h-[90vh] bg-gray-50 dark:bg-gray-950 flex flex-col md:flex-row transition-colors duration-300">
+    <div className="min-h-[90vh] bg-slate-50/50 dark:bg-gray-950 flex flex-col md:flex-row transition-colors duration-300">
       {/* Mobile Sidebar Header */}
-      <div className="md:hidden bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 p-4 flex justify-between items-center">
-        <span className="font-bold text-sm text-gray-700 dark:text-gray-300">
-          Dashboard Panel <span className="text-primary-500 capitalize">({user.role})</span>
-        </span>
+      <div className="md:hidden bg-white dark:bg-gray-900 border-b border-slate-100 dark:border-gray-800 p-4 flex justify-between items-center shadow-sm">
+        <div className="flex items-center gap-2">
+          <img
+            src="https://i.ibb.co.com/BV1jk40k/faiz00-s-7207516.png"
+            alt="Logo"
+            className="h-8 w-auto object-contain"
+          />
+          <span className="font-extrabold text-xs text-gray-900 dark:text-white capitalize bg-primary-50 dark:bg-primary-950/30 px-2.5 py-0.5 rounded-full">
+            {user.role} Hub
+          </span>
+        </div>
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="p-1 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+          className="p-2 border border-slate-200 dark:border-gray-800 rounded-xl text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition"
         >
-          {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
+          {sidebarOpen ? <X size={18} /> : <Menu size={18} />}
         </button>
       </div>
 
-      {/* Sidebar Sidebar */}
+      {/* Sidebar Navigation */}
       <aside
-        className={`w-full md:w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex-shrink-0 transition-all ${
-          sidebarOpen ? 'block' : 'hidden md:block'
+        className={`w-full md:w-64 bg-white dark:bg-gray-900 border-r border-slate-100 dark:border-gray-800 flex-shrink-0 transition-all duration-300 shadow-sm md:shadow-none flex flex-col ${
+          sidebarOpen ? 'block' : 'hidden md:flex'
         }`}
       >
-        <div className="p-6 border-b border-gray-100 dark:border-gray-800 flex items-center gap-3">
-          <img
-            src={user.photo || 'https://i.pravatar.cc/300?img=9'}
-            alt=""
-            className="w-10 h-10 rounded-full object-cover border border-primary-500"
-          />
-          <div>
-            <h4 className="font-bold text-sm text-gray-900 dark:text-white line-clamp-1">{user.name}</h4>
-            <span className="text-[10px] text-gray-500 capitalize bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-full font-semibold">
-              {user.role}
+        {/* User Card */}
+        <div className="p-6 border-b border-slate-100 dark:border-gray-800 flex items-center gap-3 bg-gradient-to-br from-slate-50/50 to-transparent dark:from-gray-900/50 dark:to-transparent">
+          <div className="relative">
+            <img
+              src={user.photo || 'https://i.pravatar.cc/300?img=9'}
+              alt={user.name}
+              className="w-11 h-11 rounded-full object-cover border-2 border-primary-500 shadow-sm"
+              onError={(e) => { e.target.src = 'https://i.pravatar.cc/300?img=9'; }}
+            />
+            {user.verified && (
+              <span className="absolute bottom-0 right-0 bg-success-500 text-white rounded-full p-0.5 border border-white dark:border-gray-900 shadow">
+                <CheckSquare size={8} />
+              </span>
+            )}
+          </div>
+          <div className="min-w-0 flex-grow">
+            <h4 className="font-extrabold text-sm text-gray-900 dark:text-white truncate" title={user.name}>
+              {user.name}
+            </h4>
+            <span className="text-[9px] text-primary-600 dark:text-primary-400 font-extrabold uppercase tracking-wider block mt-0.5">
+              {user.role} Account
             </span>
           </div>
         </div>
 
-        {/* View Switcher Toggle for Sellers */}
+        {/* View Switcher for Sellers */}
         {user.role === 'seller' && (
-          <div className="px-4 py-3 mx-4 my-3 bg-gray-50 dark:bg-gray-850 rounded-xl border border-gray-100 dark:border-gray-800">
-            <label className="text-[9px] uppercase tracking-wider text-gray-400 dark:text-gray-500 font-bold block mb-1.5">
-              Dashboard View Mode
+          <div className="px-4 py-3 mx-4 my-4 bg-slate-50 dark:bg-gray-950 rounded-2xl border border-slate-100 dark:border-gray-800">
+            <label className="text-[8px] uppercase tracking-wider text-slate-400 dark:text-gray-500 font-black block mb-2">
+              Switch Workspace Mode
             </label>
-            <div className="grid grid-cols-2 gap-1 p-0.5 bg-gray-200/50 dark:bg-gray-900 rounded-lg">
+            <div className="grid grid-cols-2 gap-1 p-1 bg-slate-200/50 dark:bg-gray-900 rounded-xl">
               <button
                 onClick={() => handleViewModeChange('seller')}
-                className={`py-1 rounded-md text-[10px] font-bold transition-all ${
+                className={`py-1.5 rounded-lg text-[10px] font-black tracking-wide transition-all cursor-pointer ${
                   viewMode === 'seller'
-                    ? 'bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-sm border border-gray-100 dark:border-gray-700/50'
-                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                    ? 'bg-white dark:bg-gray-800 text-primary-650 dark:text-primary-400 shadow-sm border border-slate-100 dark:border-gray-700/50'
+                    : 'text-slate-500 dark:text-gray-400 hover:text-slate-700 dark:hover:text-slate-350'
                 }`}
               >
                 Seller
               </button>
               <button
                 onClick={() => handleViewModeChange('buyer')}
-                className={`py-1 rounded-md text-[10px] font-bold transition-all ${
+                className={`py-1.5 rounded-lg text-[10px] font-black tracking-wide transition-all cursor-pointer ${
                   viewMode === 'buyer'
-                    ? 'bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-sm border border-gray-100 dark:border-gray-700/50'
-                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                    ? 'bg-white dark:bg-gray-800 text-primary-650 dark:text-primary-400 shadow-sm border border-slate-100 dark:border-gray-700/50'
+                    : 'text-slate-500 dark:text-gray-400 hover:text-slate-700 dark:hover:text-slate-350'
                 }`}
               >
                 Buyer
@@ -219,39 +238,65 @@ export default function DashboardLayout({ children }) {
           </div>
         )}
 
-        <nav className="p-4 space-y-1.5">
-          {menuLinks.map((item) => (
-            <Link
-              key={item.name}
-              href={item.path}
-              onClick={() => setSidebarOpen(false)}
-              className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold transition ${
-                isActive(item.path)
-                  ? 'bg-primary-600 text-white shadow-md'
-                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-primary-600 dark:hover:text-primary-400'
-              }`}
-            >
-              {item.icon}
-              {item.name}
-            </Link>
-          ))}
+        {/* Navigation links */}
+        <nav className="p-4 space-y-1.5 flex-grow overflow-y-auto">
+          {menuLinks.map((item) => {
+            const active = isActive(item.path);
+            return (
+              <Link
+                key={item.name}
+                href={item.path}
+                onClick={() => setSidebarOpen(false)}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition-all relative ${
+                  active
+                    ? 'bg-primary-600 text-white shadow-md shadow-primary-500/10'
+                    : 'text-slate-600 dark:text-gray-400 hover:bg-slate-50 dark:hover:bg-gray-850 hover:text-primary-650 dark:hover:text-primary-450'
+                }`}
+              >
+                <span className="flex-shrink-0">{item.icon}</span>
+                <span className="truncate">{item.name}</span>
+                {active && (
+                  <motion.span
+                    layoutId="sidebarActive"
+                    className="absolute left-0 w-1.5 h-6 bg-amber-400 rounded-r-md"
+                    transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                  />
+                )}
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* Logout Bottom Button */}
+        <div className="p-4 mt-auto border-t border-slate-100 dark:border-gray-850">
           <button
             onClick={() => {
               setSidebarOpen(false);
               logout();
             }}
-            className="flex items-center gap-3 w-full text-left px-4 py-2.5 rounded-xl text-xs font-semibold text-danger-500 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+            className="flex items-center gap-3 w-full text-left px-4 py-3 rounded-xl text-xs font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-all cursor-pointer"
           >
-            <LogOut size={18} />
-            Logout
+            <LogOut size={16} />
+            <span>Sign Out Session</span>
           </button>
-        </nav>
+        </div>
       </aside>
 
       {/* Main View Container */}
       <main className="flex-grow p-6 sm:p-10 overflow-y-auto">
-        <div className="max-w-6xl mx-auto space-y-6">
-          {children}
+        <div className="max-w-6xl mx-auto">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={pathname}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.25 }}
+              className="space-y-6"
+            >
+              {children}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </main>
     </div>

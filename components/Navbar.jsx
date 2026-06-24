@@ -39,10 +39,13 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex-shrink-0">
-            <Link href="/" className="flex items-center gap-2">
-              <span className="text-2xl font-extrabold bg-gradient-to-r from-primary-600 to-indigo-500 bg-clip-text text-transparent tracking-wide font-sans">
-                ReSell<span className="text-primary-500">Hub</span>
-              </span>
+            <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+              <img
+                src="https://i.ibb.co.com/BV1jk40k/faiz00-s-7207516.png"
+                alt="ReSell Hub Logo"
+                className="h-10 sm:h-12 w-auto object-contain"
+              />
+              <span className="hidden sm:inline-block text-4xl font-extrabold text-gray-800 dark:text-gray-200">ReSellHub</span>
             </Link>
           </div>
 
