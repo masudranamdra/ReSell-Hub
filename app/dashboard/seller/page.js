@@ -60,71 +60,71 @@ export default function SellerDashboard() {
       </div>
 
       {/* KPI Display Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6">
         {/* Total Products */}
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-2xl shadow-sm flex flex-col justify-between space-y-2">
+        <div className="bg-white dark:bg-gray-900 border border-slate-200/60 dark:border-gray-800 p-6 rounded-2xl shadow-sm flex flex-col justify-between space-y-4 hover:shadow-md transition">
           <div className="flex items-center justify-between">
-            <span className="text-[9px] text-gray-400 font-bold uppercase">Total Products</span>
-            <div className="p-1.5 bg-primary-50 dark:bg-primary-950/20 text-primary-600 rounded-lg">
-              <Layers size={14} />
+            <span className="text-[10px] text-slate-400 dark:text-gray-500 font-extrabold uppercase tracking-wider">Total Products</span>
+            <div className="p-3 bg-primary-50 dark:bg-primary-950/20 text-primary-600 dark:text-primary-400 rounded-xl">
+              <Layers size={16} />
             </div>
           </div>
-          <h3 className="text-xl font-extrabold text-gray-950 dark:text-white">{stats?.totalProducts || 0}</h3>
+          <h3 className="text-2xl font-black text-gray-900 dark:text-white leading-none">{stats?.totalProducts || 0}</h3>
         </div>
 
         {/* Total Sales */}
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-2xl shadow-sm flex flex-col justify-between space-y-2">
+        <div className="bg-white dark:bg-gray-900 border border-slate-200/60 dark:border-gray-800 p-6 rounded-2xl shadow-sm flex flex-col justify-between space-y-4 hover:shadow-md transition">
           <div className="flex items-center justify-between">
-            <span className="text-[9px] text-gray-400 font-bold uppercase">Total Sales</span>
-            <div className="p-1.5 bg-success-50 text-success-600 dark:bg-success-950/20 rounded-lg">
-              <ShoppingBag size={14} />
+            <span className="text-[10px] text-slate-400 dark:text-gray-500 font-extrabold uppercase tracking-wider">Total Sales</span>
+            <div className="p-3 bg-success-50 dark:bg-success-950/20 text-success-600 dark:text-success-400 rounded-xl">
+              <ShoppingBag size={16} />
             </div>
           </div>
-          <h3 className="text-xl font-extrabold text-gray-950 dark:text-white">{stats?.totalSales || 0}</h3>
+          <h3 className="text-2xl font-black text-gray-900 dark:text-white leading-none">{stats?.totalSales || 0}</h3>
         </div>
 
         {/* Total Revenue */}
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-2xl shadow-sm flex flex-col justify-between space-y-2">
+        <div className="bg-white dark:bg-gray-900 border border-slate-200/60 dark:border-gray-800 p-6 rounded-2xl shadow-sm flex flex-col justify-between space-y-4 hover:shadow-md transition">
           <div className="flex items-center justify-between">
-            <span className="text-[9px] text-gray-400 font-bold uppercase">Total Revenue</span>
-            <div className="p-1.5 bg-indigo-50 text-indigo-600 dark:bg-indigo-950/20 rounded-lg">
-              <DollarSign size={14} />
+            <span className="text-[10px] text-slate-400 dark:text-gray-500 font-extrabold uppercase tracking-wider">Revenue</span>
+            <div className="p-3 bg-indigo-50 dark:bg-indigo-950/20 text-indigo-500 dark:text-indigo-400 rounded-xl">
+              <DollarSign size={16} />
             </div>
           </div>
-          <h3 className="text-xl font-extrabold text-gray-950 dark:text-white">${stats?.totalRevenue || 0}</h3>
+          <h3 className="text-2xl font-black text-gray-900 dark:text-white leading-none">${stats?.totalRevenue || 0}</h3>
         </div>
 
         {/* Pending Orders */}
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-2xl shadow-sm flex flex-col justify-between space-y-2">
+        <div className="bg-white dark:bg-gray-900 border border-slate-200/60 dark:border-gray-800 p-6 rounded-2xl shadow-sm flex flex-col justify-between space-y-4 hover:shadow-md transition">
           <div className="flex items-center justify-between">
-            <span className="text-[9px] text-gray-400 font-bold uppercase">Pending Orders</span>
-            <div className="p-1.5 bg-amber-50 text-amber-500 dark:bg-amber-950/20 rounded-lg">
-              <Clock size={14} />
+            <span className="text-[10px] text-slate-400 dark:text-gray-500 font-extrabold uppercase tracking-wider">Pending Orders</span>
+            <div className="p-3 bg-amber-50 dark:bg-amber-950/20 text-amber-500 rounded-xl">
+              <Clock size={16} />
             </div>
           </div>
-          <h3 className="text-xl font-extrabold text-gray-950 dark:text-white">{stats?.pendingOrders || 0}</h3>
+          <h3 className="text-2xl font-black text-gray-900 dark:text-white leading-none">{stats?.pendingOrders || 0}</h3>
         </div>
 
         {/* Delivered Orders */}
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-2xl shadow-sm flex flex-col justify-between space-y-2">
+        <div className="bg-white dark:bg-gray-900 border border-slate-200/60 dark:border-gray-800 p-6 rounded-2xl shadow-sm flex flex-col justify-between space-y-4 hover:shadow-md transition">
           <div className="flex items-center justify-between">
-            <span className="text-[9px] text-gray-400 font-bold uppercase">Delivered</span>
-            <div className="p-1.5 bg-success-50 text-success-500 dark:bg-success-950/20 rounded-lg">
-              <CheckSquare size={14} />
+            <span className="text-[10px] text-slate-400 dark:text-gray-500 font-extrabold uppercase tracking-wider">Delivered</span>
+            <div className="p-3 bg-success-50 dark:bg-success-950/20 text-success-600 dark:text-success-400 rounded-xl">
+              <CheckSquare size={16} />
             </div>
           </div>
-          <h3 className="text-xl font-extrabold text-gray-950 dark:text-white">{stats?.deliveredOrders || 0}</h3>
+          <h3 className="text-2xl font-black text-gray-900 dark:text-white leading-none">{stats?.deliveredOrders || 0}</h3>
         </div>
 
         {/* Low Stock Products */}
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-2xl shadow-sm flex flex-col justify-between space-y-2">
+        <div className="bg-white dark:bg-gray-900 border border-slate-200/60 dark:border-gray-800 p-6 rounded-2xl shadow-sm flex flex-col justify-between space-y-4 hover:shadow-md transition">
           <div className="flex items-center justify-between">
-            <span className="text-[9px] text-gray-400 font-bold uppercase">Low Stock</span>
-            <div className={`p-1.5 rounded-lg ${stats?.lowStockProducts > 0 ? 'bg-danger-50 text-danger-500 dark:bg-danger-950/20' : 'bg-gray-50 text-gray-400'}`}>
-              <AlertTriangle size={14} />
+            <span className="text-[10px] text-slate-400 dark:text-gray-500 font-extrabold uppercase tracking-wider">Low Stock</span>
+            <div className={`p-3 rounded-xl ${stats?.lowStockProducts > 0 ? 'bg-red-50 text-red-650 dark:bg-red-950/20' : 'bg-slate-50 text-slate-400 dark:bg-gray-800'}`}>
+              <AlertTriangle size={16} />
             </div>
           </div>
-          <h3 className={`text-xl font-extrabold ${stats?.lowStockProducts > 0 ? 'text-danger-500' : 'text-gray-950 dark:text-white'}`}>
+          <h3 className={`text-2xl font-black leading-none ${stats?.lowStockProducts > 0 ? 'text-red-500' : 'text-gray-900 dark:text-white'}`}>
             {stats?.lowStockProducts || 0}
           </h3>
         </div>

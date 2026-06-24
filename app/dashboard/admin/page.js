@@ -56,115 +56,115 @@ export default function AdminDashboard() {
       </div>
 
       {/* Enterprise KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
         {/* Total Users */}
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-2xl shadow-sm flex flex-col justify-between space-y-2">
+        <div className="bg-white dark:bg-gray-900 border border-slate-200/60 dark:border-gray-800 p-5 rounded-2xl shadow-sm hover:shadow-md transition duration-305 flex flex-col justify-between space-y-4">
           <div className="flex items-center justify-between">
-            <span className="text-[9px] text-gray-400 font-bold uppercase">Total Users</span>
-            <div className="p-1.5 bg-primary-50 dark:bg-primary-950/20 text-primary-600 rounded-lg">
-              <Users size={14} />
+            <span className="text-[10px] text-slate-400 dark:text-gray-500 font-extrabold uppercase tracking-wider">Total Users</span>
+            <div className="p-2.5 bg-primary-50 dark:bg-primary-950/20 text-primary-600 dark:text-primary-400 rounded-xl">
+              <Users size={16} />
             </div>
           </div>
-          <h3 className="text-xl font-extrabold text-gray-950 dark:text-white">{stats?.totalUsers || 0}</h3>
+          <h3 className="text-2xl font-black text-gray-900 dark:text-white leading-none">{stats?.totalUsers || 0}</h3>
         </div>
 
         {/* Total Buyers */}
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-2xl shadow-sm flex flex-col justify-between space-y-2">
+        <div className="bg-white dark:bg-gray-900 border border-slate-200/60 dark:border-gray-800 p-5 rounded-2xl shadow-sm hover:shadow-md transition duration-305 flex flex-col justify-between space-y-4">
           <div className="flex items-center justify-between">
-            <span className="text-[9px] text-gray-400 font-bold uppercase">Total Buyers</span>
-            <div className="p-1.5 bg-success-50 text-success-600 dark:bg-success-950/20 rounded-lg">
-              <Users size={14} />
+            <span className="text-[10px] text-slate-400 dark:text-gray-500 font-extrabold uppercase tracking-wider">Total Buyers</span>
+            <div className="p-2.5 bg-success-50 dark:bg-success-950/20 text-success-600 dark:text-success-400 rounded-xl">
+              <Users size={16} />
             </div>
           </div>
-          <h3 className="text-xl font-extrabold text-gray-950 dark:text-white">{stats?.totalBuyers || 0}</h3>
+          <h3 className="text-2xl font-black text-gray-900 dark:text-white leading-none">{stats?.totalBuyers || 0}</h3>
         </div>
 
         {/* Total Sellers */}
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-2xl shadow-sm flex flex-col justify-between space-y-2">
+        <div className="bg-white dark:bg-gray-900 border border-slate-200/60 dark:border-gray-800 p-5 rounded-2xl shadow-sm hover:shadow-md transition duration-305 flex flex-col justify-between space-y-4">
           <div className="flex items-center justify-between">
-            <span className="text-[9px] text-gray-400 font-bold uppercase">Total Sellers</span>
-            <div className="p-1.5 bg-indigo-50 text-indigo-600 dark:bg-indigo-950/20 rounded-lg">
-              <Users size={14} />
+            <span className="text-[10px] text-slate-400 dark:text-gray-500 font-extrabold uppercase tracking-wider">Total Sellers</span>
+            <div className="p-2.5 bg-indigo-50 dark:bg-indigo-950/20 text-indigo-500 dark:text-indigo-400 rounded-xl">
+              <Users size={16} />
             </div>
           </div>
-          <h3 className="text-xl font-extrabold text-gray-950 dark:text-white">{stats?.totalSellers || 0}</h3>
+          <h3 className="text-2xl font-black text-gray-900 dark:text-white leading-none">{stats?.totalSellers || 0}</h3>
         </div>
 
         {/* Total Products */}
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-2xl shadow-sm flex flex-col justify-between space-y-2">
+        <div className="bg-white dark:bg-gray-900 border border-slate-200/60 dark:border-gray-800 p-5 rounded-2xl shadow-sm hover:shadow-md transition duration-305 flex flex-col justify-between space-y-4">
           <div className="flex items-center justify-between">
-            <span className="text-[9px] text-gray-400 font-bold uppercase">Total Products</span>
-            <div className="p-1.5 bg-amber-50 text-amber-500 dark:bg-amber-950/20 rounded-lg">
-              <Layers size={14} />
+            <span className="text-[10px] text-slate-400 dark:text-gray-500 font-extrabold uppercase tracking-wider">Total Products</span>
+            <div className="p-2.5 bg-amber-50 dark:bg-amber-950/20 text-amber-500 rounded-xl">
+              <Layers size={16} />
             </div>
           </div>
-          <h3 className="text-xl font-extrabold text-gray-950 dark:text-white">{stats?.totalProducts || 0}</h3>
+          <h3 className="text-2xl font-black text-gray-900 dark:text-white leading-none">{stats?.totalProducts || 0}</h3>
         </div>
 
         {/* Pending Products */}
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-2xl shadow-sm flex flex-col justify-between space-y-2">
+        <div className="bg-white dark:bg-gray-900 border border-slate-200/60 dark:border-gray-850 p-5 rounded-2xl shadow-sm hover:shadow-md transition duration-305 flex flex-col justify-between space-y-4">
           <div className="flex items-center justify-between">
-            <span className="text-[9px] text-gray-400 font-bold uppercase">Pending Prod</span>
-            <div className="p-1.5 bg-amber-50 text-amber-500 dark:bg-amber-950/20 rounded-lg">
-              <Clock size={14} />
+            <span className="text-[10px] text-slate-400 dark:text-gray-500 font-extrabold uppercase tracking-wider">Pending Prod</span>
+            <div className="p-2.5 bg-amber-50 dark:bg-amber-950/20 text-amber-500 rounded-xl">
+              <Clock size={16} />
             </div>
           </div>
-          <h3 className="text-xl font-extrabold text-gray-950 dark:text-white">{stats?.pendingProducts || 0}</h3>
+          <h3 className="text-2xl font-black text-gray-900 dark:text-white leading-none">{stats?.pendingProducts || 0}</h3>
         </div>
 
         {/* Approved Products */}
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-2xl shadow-sm flex flex-col justify-between space-y-2">
+        <div className="bg-white dark:bg-gray-900 border border-slate-200/60 dark:border-gray-800 p-5 rounded-2xl shadow-sm hover:shadow-md transition duration-305 flex flex-col justify-between space-y-4">
           <div className="flex items-center justify-between">
-            <span className="text-[9px] text-gray-400 font-bold uppercase">Approved Prod</span>
-            <div className="p-1.5 bg-success-50 text-success-600 dark:bg-success-950/20 rounded-lg">
-              <CheckSquare size={14} />
+            <span className="text-[10px] text-slate-400 dark:text-gray-500 font-extrabold uppercase tracking-wider">Approved Prod</span>
+            <div className="p-2.5 bg-success-50 dark:bg-success-950/20 text-success-600 dark:text-success-400 rounded-xl">
+              <CheckSquare size={16} />
             </div>
           </div>
-          <h3 className="text-xl font-extrabold text-gray-950 dark:text-white">{stats?.approvedProducts || 0}</h3>
+          <h3 className="text-2xl font-black text-gray-900 dark:text-white leading-none">{stats?.approvedProducts || 0}</h3>
         </div>
 
         {/* Rejected Products */}
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-2xl shadow-sm flex flex-col justify-between space-y-2">
+        <div className="bg-white dark:bg-gray-900 border border-slate-200/60 dark:border-gray-800 p-5 rounded-2xl shadow-sm hover:shadow-md transition duration-305 flex flex-col justify-between space-y-4">
           <div className="flex items-center justify-between">
-            <span className="text-[9px] text-gray-400 font-bold uppercase">Rejected Prod</span>
-            <div className="p-1.5 bg-danger-50 text-danger-500 dark:bg-danger-950/20 rounded-lg">
-              <XSquare size={14} />
+            <span className="text-[10px] text-slate-400 dark:text-gray-500 font-extrabold uppercase tracking-wider">Rejected Prod</span>
+            <div className="p-2.5 bg-danger-50 dark:bg-danger-950/20 text-danger-600 rounded-xl">
+              <XSquare size={16} />
             </div>
           </div>
-          <h3 className="text-xl font-extrabold text-gray-950 dark:text-white">{stats?.rejectedProducts || 0}</h3>
+          <h3 className="text-2xl font-black text-gray-900 dark:text-white leading-none">{stats?.rejectedProducts || 0}</h3>
         </div>
 
         {/* Total Orders */}
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-2xl shadow-sm flex flex-col justify-between space-y-2">
+        <div className="bg-white dark:bg-gray-900 border border-slate-200/60 dark:border-gray-800 p-5 rounded-2xl shadow-sm hover:shadow-md transition duration-305 flex flex-col justify-between space-y-4">
           <div className="flex items-center justify-between">
-            <span className="text-[9px] text-gray-400 font-bold uppercase">Total Orders</span>
-            <div className="p-1.5 bg-primary-50 dark:bg-primary-950/20 text-primary-600 rounded-lg">
-              <ShoppingBag size={14} />
+            <span className="text-[10px] text-slate-400 dark:text-gray-500 font-extrabold uppercase tracking-wider">Total Orders</span>
+            <div className="p-2.5 bg-primary-50 dark:bg-primary-950/20 text-primary-600 dark:text-primary-400 rounded-xl">
+              <ShoppingBag size={16} />
             </div>
           </div>
-          <h3 className="text-xl font-extrabold text-gray-950 dark:text-white">{stats?.totalOrders || 0}</h3>
+          <h3 className="text-2xl font-black text-gray-900 dark:text-white leading-none">{stats?.totalOrders || 0}</h3>
         </div>
 
         {/* Revenue */}
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-2xl shadow-sm flex flex-col justify-between space-y-2">
+        <div className="bg-white dark:bg-gray-900 border border-slate-200/60 dark:border-gray-800 p-5 rounded-2xl shadow-sm hover:shadow-md transition duration-305 flex flex-col justify-between space-y-4">
           <div className="flex items-center justify-between">
-            <span className="text-[9px] text-gray-400 font-bold uppercase">Revenue</span>
-            <div className="p-1.5 bg-indigo-50 text-indigo-600 dark:bg-indigo-950/20 rounded-lg">
-              <DollarSign size={14} />
+            <span className="text-[10px] text-slate-400 dark:text-gray-500 font-extrabold uppercase tracking-wider">Total Revenue</span>
+            <div className="p-2.5 bg-indigo-50 dark:bg-indigo-950/20 text-indigo-500 dark:text-indigo-400 rounded-xl">
+              <DollarSign size={16} />
             </div>
           </div>
-          <h3 className="text-xl font-extrabold text-gray-950 dark:text-white">${stats?.totalRevenue || 0}</h3>
+          <h3 className="text-2xl font-black text-gray-900 dark:text-white leading-none">${stats?.totalRevenue || 0}</h3>
         </div>
 
         {/* Reports */}
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-2xl shadow-sm flex flex-col justify-between space-y-2">
+        <div className="bg-white dark:bg-gray-900 border border-slate-200/60 dark:border-gray-800 p-5 rounded-2xl shadow-sm hover:shadow-md transition duration-305 flex flex-col justify-between space-y-4">
           <div className="flex items-center justify-between">
-            <span className="text-[9px] text-gray-400 font-bold uppercase">Reports Flag</span>
-            <div className={`p-1.5 rounded-lg ${stats?.totalReports > 0 ? 'bg-danger-50 text-danger-500 dark:bg-danger-950/20' : 'bg-gray-50 text-gray-450'}`}>
-              <ShieldAlert size={14} />
+            <span className="text-[10px] text-slate-400 dark:text-gray-500 font-extrabold uppercase tracking-wider">Reports Flag</span>
+            <div className={`p-2.5 rounded-xl ${stats?.totalReports > 0 ? 'bg-red-50 text-red-650 dark:bg-red-950/20' : 'bg-slate-50 text-slate-400 dark:bg-gray-800'}`}>
+              <ShieldAlert size={16} />
             </div>
           </div>
-          <h3 className={`text-xl font-extrabold ${stats?.totalReports > 0 ? 'text-danger-500' : 'text-gray-950 dark:text-white'}`}>
+          <h3 className={`text-2xl font-black leading-none ${stats?.totalReports > 0 ? 'text-red-550' : 'text-gray-900 dark:text-white'}`}>
             {stats?.totalReports || 0}
           </h3>
         </div>
