@@ -128,3 +128,58 @@
 .card-image-wrapper img:hover {
   transform: scale(1.05);
 }
+
+/* Premium Typography Accents */
+.font-brand {
+  font-family: 'Outfit', sans-serif;
+}
+
+/* Orbiting Animation System */
+@keyframes orbit {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes counter-orbit {
+  from {
+    transform: rotate(360deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+.animate-orbit {
+  animation: orbit 50s linear infinite;
+}
+
+.animate-counter-orbit {
+  animation: counter-orbit 50s linear infinite;
+}
+
+/* Radial Glows & Grid backings */
+.sun-glow {
+  box-shadow: 0 0 50px 10px rgba(139, 92, 246, 0.25), 0 0 80px 20px rgba(245, 158, 11, 0.15);
+}
+
+.planet-glow {
+  box-shadow: 0 0 20px 2px rgba(139, 92, 246, 0.1);
+}
+
+.planet-glow:hover {
+  box-shadow: 0 0 30px 5px rgba(139, 92, 246, 0.35);
+}
+
+.bg-dot-pattern {
+  background-image: radial-gradient(rgba(139, 92, 246, 0.08) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.dark .bg-dot-pattern {
+  background-image: radial-gradient(rgba(139, 92, 246, 0.15) 1px, transparent 1px);
+}
+
