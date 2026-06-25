@@ -126,8 +126,8 @@ export default function Footer() {
             &copy; {new Date().getFullYear()} ReSell Hub. All rights reserved. Made for sustainable trading.
           </p>
           <div className="flex space-x-6 text-xs text-gray-400 dark:text-gray-500">
-            <span>Designed for Recruiter Review</span>
-            <span>Secure SSL Encrypted</span>
+            <span> privacy and policy </span>
+            <span>terms and condition</span>
           </div>
         </div>
       </div>
