@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext, API_URL } from '../../../components/Providers';
-import { ShoppingBag, Loader2, Calendar, User, Phone, MapPin, CheckCircle, XCircle } from 'lucide-react';
+import { ShoppingBag, Loader2, Calendar, User, Phone, MapPin, CheckCircle, XCircle, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function ManageOrders() {
@@ -56,6 +56,25 @@ export default function ManageOrders() {
       toast.error('Network error updating status');
     } finally {
       setUpdatingId(null);
+    }
+  };
+
+  const handleDeleteOrder = async (orderId) => {
+    if (!window.confirm('Are you sure you want to delete this order record?')) return;
+    try {
+      const res = await fetch(`${API_URL}/api/orders/${orderId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success(data.message || 'Order record deleted successfully');
+        setOrders(orders.filter(o => o._id !== orderId));
+      } else {
+        toast.error(data.message || 'Failed to delete order record');
+      }
+    } catch (err) {
+      toast.error('Network error deleting order record');
     }
   };
 
@@ -187,15 +206,31 @@ export default function ManageOrders() {
 
                     {/* Final state feedback */}
                     {status === 'delivered' && (
-                      <span className="text-xs text-success-600 dark:text-success-400 font-semibold">
-                        ✓ Package Fulfilled
-                      </span>
+                      <div className="flex flex-col items-end gap-2">
+                        <span className="text-xs text-success-600 dark:text-success-400 font-semibold">
+                          ✓ Package Fulfilled
+                        </span>
+                        <button
+                          onClick={() => handleDeleteOrder(order._id)}
+                          className="px-3 py-1.5 bg-danger-55 hover:bg-danger-500 text-danger-600 hover:text-white text-[10px] font-bold rounded-xl transition flex items-center gap-1 border border-danger-200"
+                        >
+                          <Trash2 size={12} /> Delete Record
+                        </button>
+                      </div>
                     )}
 
                     {status === 'cancelled' && (
-                      <span className="text-xs text-danger-500 font-semibold">
-                        ✕ Order Cancelled
-                      </span>
+                      <div className="flex flex-col items-end gap-2">
+                        <span className="text-xs text-danger-500 font-semibold">
+                          ✕ Order Cancelled
+                        </span>
+                        <button
+                          onClick={() => handleDeleteOrder(order._id)}
+                          className="px-3 py-1.5 bg-danger-55 hover:bg-danger-500 text-danger-600 hover:text-white text-[10px] font-bold rounded-xl transition flex items-center gap-1 border border-danger-200"
+                        >
+                          <Trash2 size={12} /> Delete Record
+                        </button>
+                      </div>
                     )}
                   </div>
                 </div>

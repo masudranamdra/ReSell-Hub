@@ -75,14 +75,14 @@ export default function Footer() {
             </h3>
             <ul className="space-y-2">
               <li>
-                <a href="#" className="text-sm text-gray-500 hover:text-primary-600 dark:text-gray-400 dark:hover:text-primary-400 transition">
+                <Link href="/privacy" className="text-sm text-gray-500 hover:text-primary-600 dark:text-gray-400 dark:hover:text-primary-400 transition">
                   Privacy Policy
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-sm text-gray-500 hover:text-primary-600 dark:text-gray-400 dark:hover:text-primary-400 transition">
+                <Link href="/terms" className="text-sm text-gray-500 hover:text-primary-600 dark:text-gray-400 dark:hover:text-primary-400 transition">
                   Terms of Service
-                </a>
+                </Link>
               </li>
               <li>
                 <a href="#" className="text-sm text-gray-500 hover:text-primary-600 dark:text-gray-400 dark:hover:text-primary-400 transition">
@@ -125,9 +125,14 @@ export default function Footer() {
           <p className="text-xs text-gray-400 dark:text-gray-500">
             &copy; {new Date().getFullYear()} ReSell Hub. All rights reserved. Made for sustainable trading.
           </p>
-          <div className="flex space-x-6 text-xs text-gray-400 dark:text-gray-500">
-            <span> privacy and policy </span>
-            <span>terms and condition</span>
+          <div className="flex space-x-6 text-xs text-gray-450 dark:text-gray-500">
+            <Link href="/privacy" className="hover:text-primary-600 dark:hover:text-primary-450 transition font-medium">
+              Privacy Policy
+            </Link>
+            <span className="text-gray-300 dark:text-gray-800">|</span>
+            <Link href="/terms" className="hover:text-primary-600 dark:hover:text-primary-450 transition font-medium">
+              Terms & Conditions
+            </Link>
           </div>
         </div>
       </div>

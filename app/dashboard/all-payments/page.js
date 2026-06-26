@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext, API_URL } from '../../../components/Providers';
-import { CreditCard, Search, Loader2, Calendar, ShoppingBag } from 'lucide-react';
+import { CreditCard, Search, Loader2, Calendar, ShoppingBag, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function AllPaymentsAudit() {
@@ -32,6 +32,26 @@ export default function AllPaymentsAudit() {
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeletePayment = async (paymentId) => {
+    if (!window.confirm('Are you sure you want to delete this payment record?')) return;
+    try {
+      const res = await fetch(`${API_URL}/api/payments/admin/${paymentId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success(data.message || 'Payment record deleted successfully');
+        setPayments(payments.filter((p) => p._id !== paymentId));
+      } else {
+        toast.error(data.message || 'Failed to delete payment record');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Error deleting payment record');
     }
   };
 
@@ -88,6 +108,7 @@ export default function AllPaymentsAudit() {
                   <th className="p-4">Amount</th>
                   <th className="p-4">Date</th>
                   <th className="p-4">Status</th>
+                  <th className="p-4 text-right">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -111,10 +132,21 @@ export default function AllPaymentsAudit() {
                     </td>
                     <td className="p-4">
                       <span className={`inline-block px-2.5 py-0.5 text-[10px] font-bold rounded-full capitalize ${
-                        pay.paymentStatus === 'success' ? 'bg-success-50 text-success-600 dark:bg-success-950/20' : 'bg-danger-50 text-danger-500 dark:bg-danger-950/20'
+                        pay.paymentStatus === 'success' ? 'bg-success-50 text-success-600 dark:bg-success-950/20' :
+                        pay.paymentStatus === 'pending' ? 'bg-amber-50 text-amber-600 dark:bg-amber-950/20' :
+                        'bg-danger-50 text-danger-500 dark:bg-danger-950/20'
                       }`}>
                         {pay.paymentStatus}
                       </span>
+                    </td>
+                    <td className="p-4 text-right">
+                      <button
+                        onClick={() => handleDeletePayment(pay._id)}
+                        className="p-2 border border-danger-200 text-danger-500 hover:bg-danger-500 hover:text-white rounded-xl transition inline-flex items-center justify-center"
+                        title="Delete Record"
+                      >
+                        <Trash2 size={12} />
+                      </button>
                     </td>
                   </tr>
                 ))}
