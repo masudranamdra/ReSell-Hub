@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { Mail, Phone, MapPin, Facebook, Twitter, Instagram, Github } from 'lucide-react';
+import { Mail, Phone, MapPin, Facebook, Twitter, Instagram, Github, Linkedin, SunMedium } from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -24,16 +24,16 @@ export default function Footer() {
             </p>
             {/* Social Icons */}
             <div className="flex space-x-4">
-              <a href="#" className="text-gray-400 hover:text-primary-500 transition" aria-label="Facebook">
+              <a href="https://www.facebook.com/masudranamdra1/" className="text-gray-400 hover:text-primary-500 transition" aria-label="Facebook">
                 <Facebook size={18} />
               </a>
-              <a href="#" className="text-gray-400 hover:text-primary-500 transition" aria-label="Twitter">
-                <Twitter size={18} />
+              <a href="https://www.linkedin.com/in/masudranamdra/" className="text-gray-400 hover:text-primary-500 transition" aria-label="Twitter">
+                <Linkedin size={18} />
               </a>
-              <a href="#" className="text-gray-400 hover:text-primary-500 transition" aria-label="Instagram">
+              <a href="https://www.instagram.com/masudranamdra/" className="text-gray-400 hover:text-primary-500 transition" aria-label="Instagram">
                 <Instagram size={18} />
               </a>
-              <a href="#" className="text-gray-400 hover:text-primary-500 transition" aria-label="Github">
+              <a href="https://github.com/masudranamdra/" className="text-gray-400 hover:text-primary-500 transition" aria-label="Github">
                 <Github size={18} />
               </a>
             </div>
@@ -123,7 +123,7 @@ export default function Footer() {
 
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-gray-400 dark:text-gray-500">
-            &copy; {new Date().getFullYear()} ReSell Hub. All rights reserved. Made for sustainable trading.
+            &copy; {new Date().getFullYear()} ReSell Hub. All rights reserved. Masud Rana 
           </p>
           <div className="flex space-x-6 text-xs text-gray-450 dark:text-gray-500">
             <Link href="/privacy" className="hover:text-primary-600 dark:hover:text-primary-450 transition font-medium">

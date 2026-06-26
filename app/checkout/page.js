@@ -289,7 +289,7 @@ function CheckoutContent() {
     },
     mastercard: {
       bg: 'bg-gradient-to-tr from-orange-600 via-red-700 to-amber-700',
-      logo: 'mastercard',
+      logo: 'Master',
       label: 'Mastercard'
     },
     amex: {
